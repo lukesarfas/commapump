@@ -8,7 +8,7 @@
   "accent": "#f0b54a",
   "tags": ["music", "web-audio", "dataviz", "tuning"],
   "links": {
-    "site": "https://commapump.sarfas.com",
+    "site": "https://storage.googleapis.com/luke-sarfas-applets/commapump-site/index.html",
     "repo": "https://github.com/lukesarfas/commapump"
   }
 }

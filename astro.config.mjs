@@ -5,6 +5,9 @@ import { defineConfig } from "astro/config";
 // by scripts/build-applet.mjs into site/applet/index.html (≤200 KB, self-contained).
 export default defineConfig({
   site: "https://commapump.sarfas.com",
+  // Served from the GCS applets bucket under a subpath until the custom domain
+  // is wired up; SITE_BASE lets the build target that prefix. Defaults to root.
+  base: process.env.SITE_BASE || "/",
   build: {
     format: "directory",
   },
