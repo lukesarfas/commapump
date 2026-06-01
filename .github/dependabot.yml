@@ -7,6 +7,15 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    # Major bumps of the build/test toolchain (astro 5→6, vitest 2→4) are
+    # breaking and intentionally pinned; the dev-only advisories they would
+    # "fix" have no exploitable path in the static build (see SECURITY.md).
+    # Take those by hand, not via an auto-PR that just turns CI red.
+    ignore:
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
     groups:
       npm-dependencies:
         patterns:
