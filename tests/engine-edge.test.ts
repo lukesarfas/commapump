@@ -91,16 +91,14 @@ describe("JI vs ET frequency selection", () => {
 
 // ---- the wandering-D two-D 81/80 gap ---------------------------------------
 describe("the wandering D — two D's a syntonic comma apart", () => {
-  it("reaches 9/8 by a major whole tone and 10/9 by a minor whole tone", () => {
-    // D 9/8 is step index 1 (up_M2); D 10/9 is step index 3 (up_M2min).
-    const dMajor = WANDERING_D.steps
-      .slice(0, 2)
-      .reduce((acc, s) => addMonzo(acc, s.rootMotion), monzo(0, 0, 0));
-    const dMinorPath = WANDERING_D.steps
-      .slice(0, 4)
-      .reduce((acc, s) => addMonzo(acc, s.rootMotion), monzo(0, 0, 0));
-    expect(monzoToRational(octaveReduce(dMajor))).toEqual(rational(9n, 8n));
-    expect(monzoToRational(octaveReduce(dMinorPath))).toEqual(rational(10n, 9n));
+  it("hits both 9/8 (major whole tone) and 10/9 (minor whole tone), in either order", () => {
+    // The two D's are the cumulative pitches after step 1 and after step 3.
+    const dFirst = WANDERING_D.steps.slice(0, 2).reduce((acc, s) => addMonzo(acc, s.rootMotion), monzo(0, 0, 0));
+    const dSecond = WANDERING_D.steps.slice(0, 4).reduce((acc, s) => addMonzo(acc, s.rootMotion), monzo(0, 0, 0));
+    const ds = [dFirst, dSecond].map((m) => monzoToRational(octaveReduce(m)));
+    const has = (n: bigint, d: bigint) => ds.some((r) => r.n === n && r.d === d);
+    expect(has(9n, 8n)).toBe(true);
+    expect(has(10n, 9n)).toBe(true);
   });
   it("the gap between the two D's is exactly the syntonic comma (81/80)", () => {
     const gap = subMonzo(JI.M2, JI.m2tone); // 9/8 ÷ 10/9

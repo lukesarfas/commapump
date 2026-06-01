@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- **Deeper walkthrough (13 scenes).** Added concrete relative-pitch beats — pitch
+  is relative (pick a reference, tune in ratios), whole-number ratios lock (4:5:6),
+  and chords pass tuning down a chain of shared notes — and split the wandering D
+  into a proper two-step derivation: the D the ii chord wants (10/9, a pure fifth
+  below the held A) vs the D the G chord wants (9/8, the fifth of a pure G).
 - **Per-example explanations.** Each example (the pump, the wandering D, the
   fifths chain) now shows what it demonstrates in the lab caption — its name and a
   one-line teaching point — above the per-view "how to read this" note.
@@ -56,6 +61,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Wrong wandering-D explanation.** The copy called the 10/9 D "the third of the
+  ii chord"; D is the *root* of the ii chord (Dm = D–F–A), tuned a pure fifth
+  below the held A. Corrected, and the derivation is now spelled out.
 - **Invisible engraving.** The abcjs notation on the "On the page" section was
   inheriting the dark theme's light text colour onto its cream paper, rendering
   near-white-on-white. Its ink is now forced dark, so the scores are legible.

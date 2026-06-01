@@ -24,8 +24,8 @@ test.describe("full-site launch", () => {
 
   test("every scroll-story scene is present", async ({ page }) => {
     const scenes = page.locator("[data-scene]");
-    // 10 narrative scenes + the playground anchor
-    await expect(scenes).toHaveCount(11);
+    // 13 narrative scenes + the playground anchor
+    await expect(scenes).toHaveCount(14);
     await expect(page.locator('[data-scene="hook"]')).toBeVisible();
     await expect(page.locator('[data-scene="playground-anchor"]')).toBeVisible();
   });

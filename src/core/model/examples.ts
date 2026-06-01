@@ -63,13 +63,15 @@ export const WANDERING_D: Progression = {
   blurb: "One note name, two pure pitches — 9/8 and 10/9, a comma apart.",
   kind: "melodic",
   defaultCycles: 1,
-  teaching: "The supertonic D is the major whole tone 9/8 as the fifth of G, but the minor whole tone 10/9 as the third of the ii chord — 81/80 apart.",
+  teaching: "One note name, two pitches: D is the major whole tone 9/8 when it's the fifth of G, but the minor whole tone 10/9 when it's the root of the ii chord (a pure fifth below the held A) — 81/80 apart.",
   steps: [
+    // 10/9 first (the D the ii chord wants), then 9/8 (the D the G chord wants),
+    // matching the walkthrough. Net motion is zero — the line returns to C.
     { degree: "C", quality: "single", rootMotion: MOTION.none, nominalRootMidi: 60, beats: 1 },
-    { degree: "D 9/8", quality: "single", rootMotion: MOTION.up_M2, nominalRootMidi: 62, beats: 1 },
-    { degree: "C", quality: "single", rootMotion: MOTION.down_M2, nominalRootMidi: 60, beats: 1 },
     { degree: "D 10/9", quality: "single", rootMotion: MOTION.up_M2min, nominalRootMidi: 62, beats: 1 },
-    { degree: "C", quality: "single", rootMotion: MOTION.down_M2min, nominalRootMidi: 60, beats: 2 },
+    { degree: "C", quality: "single", rootMotion: MOTION.down_M2min, nominalRootMidi: 60, beats: 1 },
+    { degree: "D 9/8", quality: "single", rootMotion: MOTION.up_M2, nominalRootMidi: 62, beats: 1 },
+    { degree: "C", quality: "single", rootMotion: MOTION.down_M2, nominalRootMidi: 60, beats: 2 },
   ],
 };
 
