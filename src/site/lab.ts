@@ -74,6 +74,16 @@ export function initLab(): void {
   window.addEventListener("pointerdown", unlock, { once: true });
   window.addEventListener("keydown", unlock, { once: true });
 
+  // The example explanation: what THIS musical example is and demonstrates.
+  function setExampleNote(prog: Progression): void {
+    const el = $("lab-example-note");
+    if (!el) return;
+    const strong = document.createElement("strong");
+    strong.textContent = prog.name;
+    el.replaceChildren(strong, document.createTextNode(` — ${prog.teaching}`));
+  }
+  setExampleNote(current);
+
   function loadProgression(prog: Progression, opts: { play?: boolean; tuning?: "JI" | "ET" } = {}): void {
     current = prog;
     const cycles = prog.kind === "melodic" ? 1 : store.get().cycles;
@@ -81,6 +91,7 @@ export function initLab(): void {
     engine.load(result);
     stage.setResult(result);
     store.set({ progressionId: prog.id });
+    setExampleNote(prog);
     engine.seek(0);
     if (opts.tuning) engine.setTuning(opts.tuning);
     if (opts.play && !reduced) void engine.play();

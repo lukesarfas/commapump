@@ -29,9 +29,6 @@ import {
   type Progression,
 } from "./progression";
 
-/** Where the lowest chord tone (root) is parked, in MIDI, before drift. */
-const ROOT_REGISTER_MIDI = 55;
-
 export interface ScheduledNote {
   startBeat: number;
   durBeats: number;
@@ -111,13 +108,15 @@ function emitChord(
 
   intervals.forEach((iv, voiceId) => {
     const toneMonzo = addMonzo(chord.rootMonzo, iv);
-    // Park near the nominal (non-drifting) target so the comma drift — which is
-    // far smaller than an octave — is preserved rather than octave-snapped away.
-    const targetMidi = ROOT_REGISTER_MIDI + etOffsets[voiceId];
-    const placed = placeNearMidi(toneMonzo, targetMidi);
+    // Voice each tone near the very note it is named after, so the just pitch and
+    // its nominal (equal-tempered) spelling stay in the SAME octave. Otherwise the
+    // cents-vs-ET deviation picks up a spurious octave (the source of the old
+    // "−1258¢" labels). placeNearMidi only shifts whole octaves (the e2 exponent),
+    // so the comma drift, which lives in the 3- and 5-exponents, is preserved.
+    const midiNominal = chord.nominalRootMidi + etOffsets[voiceId];
+    const placed = placeNearMidi(toneMonzo, midiNominal);
 
     const freqJI = REFERENCE_C_HZ * toNumber(monzoToRational(placed));
-    const midiNominal = chord.nominalRootMidi + etOffsets[voiceId];
     const freqET = midiToFreq(midiNominal);
     const centsVsET = 1200 * Math.log2(freqJI / freqET);
 

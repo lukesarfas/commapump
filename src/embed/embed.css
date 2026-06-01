@@ -73,15 +73,25 @@ html, body {
 }
 #stage svg text { font-family: ui-sans-serif, system-ui, sans-serif; }
 #stage svg { width: 100%; height: 100%; display: block; }
-.howto {
-  margin: 0;
-  color: var(--muted);
-  font-size: clamp(0.62rem, 1.6vmin, 0.78rem);
-  line-height: 1.4;
-  border-left: 2px solid color-mix(in oklab, var(--signature) 50%, transparent);
+.caption {
+  border-left: 2px solid color-mix(in oklab, var(--signature) 55%, transparent);
   padding-left: 0.5rem;
 }
-.howto:empty { display: none; }
+.example-note {
+  margin: 0;
+  color: var(--fg);
+  font-size: clamp(0.66rem, 1.7vmin, 0.82rem);
+  line-height: 1.35;
+}
+.example-note strong { color: var(--signature); font-weight: 600; }
+.howto {
+  margin: 0.18rem 0 0;
+  color: var(--muted);
+  font-size: clamp(0.6rem, 1.5vmin, 0.74rem);
+  line-height: 1.35;
+}
+.howto:empty,
+.example-note:empty { display: none; }
 #bar {
   display: flex;
   align-items: center;

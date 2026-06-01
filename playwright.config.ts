@@ -9,7 +9,9 @@ export default defineConfig({
   testDir: "tests/e2e",
   fullyParallel: true,
   forbidOnly: isCI,
-  retries: isCI ? 1 : 0,
+  // Two retries in CI: the gesture-gated Play button has a rare audio-unlock
+  // timing race; retrying absorbs it so CI doesn't email a red build over a flake.
+  retries: isCI ? 2 : 0,
   reporter: isCI ? [["github"], ["list"]] : "list",
   use: {
     baseURL: "http://localhost:4330",

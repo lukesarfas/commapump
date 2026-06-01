@@ -72,6 +72,12 @@ function init(): void {
   }
   stageEl.setAttribute("aria-labelledby", `tab-${stage.currentId()}`);
   setHowTo(stage.currentId());
+  const exEl = byId("example-note");
+  if (exEl) {
+    const s = document.createElement("strong");
+    s.textContent = PUMP_IVIIVI.name;
+    exEl.replaceChildren(s, document.createTextNode(` — ${PUMP_IVIIVI.teaching}`));
+  }
   switchEl.addEventListener("keydown", (e) => {
     const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
     if (!keys.includes(e.key)) return;

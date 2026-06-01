@@ -70,6 +70,16 @@ test.describe("interaction", () => {
     expect(seen.size).toBe(count);
   });
 
+  test("each example shows its own explanation that changes with the example", async ({ page }) => {
+    const note = page.locator("#lab-example-note");
+    await expect(note).toBeVisible();
+    const before = (await note.textContent())?.trim() ?? "";
+    expect(before.length).toBeGreaterThan(20);
+    await page.locator("#lab-examples .chip", { hasText: "wandering" }).click();
+    await expect(note).toContainText("wandering");
+    await expect(note).not.toHaveText(before);
+  });
+
   test("picking a playground example marks it pressed and keeps the stage drawn", async ({
     page,
     errors,

@@ -88,7 +88,10 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
               Audio isn't available in this browser, so the lab is silent — the
               visualizations and the drift readout still work.
             </p>
-            <p id="lab-howto" class="howto" data-testid="lab-howto">How to read this view appears here.</p>
+            <div class="lab-caption">
+              <p id="lab-example-note" class="example-note" data-testid="lab-example-note"></p>
+              <p id="lab-howto" class="howto" data-testid="lab-howto"></p>
+            </div>
             <div class="lab-bar">
               <button id="lab-play" type="button" class="btn primary">▶ Play</button>
               <div id="lab-readout" class="readout" aria-live="off"></div>
@@ -230,7 +233,9 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
   }
   .lab-figure {
     position: sticky;
-    top: 64px;
+    /* Vertically centre the lab in the viewport so it lines up with the
+       centred prose beside it, instead of clinging to the top. */
+    top: clamp(72px, calc(50vh - 320px), 220px);
     z-index: 1;
     background: var(--bg-1);
     border: 1px solid var(--border);
@@ -279,28 +284,46 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
   .switch { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.6rem; }
   .lab-bar { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.6rem; flex-wrap: wrap; }
   .readout { color: var(--signature); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 0.9rem; margin-right: auto; }
-  .howto {
-    margin: 0.6rem 0 0;
-    padding: 0.6rem 0.75rem;
-    border-left: 2px solid color-mix(in oklab, var(--signature) 55%, transparent);
+  .lab-caption {
+    margin: 0.7rem 0 0;
+    padding: 0.75rem 0.9rem;
     background: var(--card);
-    border-radius: 0 8px 8px 0;
-    color: var(--fg-soft);
-    font-size: 0.86rem;
+    border: 1px solid var(--border);
+    border-left: 3px solid color-mix(in oklab, var(--signature) 70%, transparent);
+    border-radius: 0 10px 10px 0;
+  }
+  .example-note {
+    margin: 0;
+    color: var(--fg);
+    font-size: 0.95rem;
     line-height: 1.5;
   }
+  .example-note :global(strong) { color: var(--signature); font-weight: 600; }
+  .howto {
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+  .howto:empty,
+  .example-note:empty { display: none; }
 
   .lab-steps { display: flex; flex-direction: column; }
   .step {
-    min-height: 64vh;
+    min-height: 68vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     padding: 1rem 0;
-    max-width: 56ch;
+    max-width: 52ch;
   }
-  .step h2 { font-size: clamp(1.4rem, 3.4vw, 2rem); margin-bottom: 0.75rem; }
-  .step :global(p) { color: var(--fg-soft); }
+  .step h2 { font-size: clamp(1.7rem, 4vw, 2.6rem); margin-bottom: 1rem; }
+  .step :global(p) {
+    color: var(--fg-soft);
+    font-size: clamp(1.05rem, 1.4vw, 1.22rem);
+    line-height: 1.7;
+  }
+  .step :global(p + p) { margin-top: 0.9rem; }
   .step.playground { min-height: auto; padding: 2rem 0 3rem; }
 
   .chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }

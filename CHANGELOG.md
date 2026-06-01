@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- **Per-example explanations.** Each example (the pump, the wandering D, the
+  fifths chain) now shows what it demonstrates in the lab caption — its name and a
+  one-line teaching point — above the per-view "how to read this" note.
+
 ### Changed
+
+- **Balanced story layout.** The sticky lab is vertically centred to line up with
+  the prose beside it, and the prose got larger type — fixing the top-aligned-lab /
+  centred-text mismatch that left big empty gaps.
 
 - **Continuous-pitch roll.** The piano-roll was rebuilt so the vertical axis is
   real pitch in cents, not snapped semitone rows (the standard way microtonal
@@ -35,6 +45,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Wrong cents labels (−1258¢).** The pitch roll measured each note's deviation
+  against a nominal note in the wrong octave (the JI voice was parked in a fixed
+  register while its name was assigned a different octave), so non-tonic chords
+  showed nonsensical values like "D −1258.7¢". Each tone is now voiced near the
+  very note it is named after, so cents read as true small deviations (e.g.
+  "D −17.6¢") and equal temperament no longer jumps those chords an octave.
 - **Stale-cache bug.** GCS entry documents (HTML, applet, manifest) had silently
   inherited GCS's 1-hour default `Cache-Control` because the deploy glob missed
   root-level files. Entry documents now ship `no-cache` (always revalidate via
