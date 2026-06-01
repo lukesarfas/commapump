@@ -16,13 +16,10 @@ import type { ScheduleResult } from "../core/index";
 import type { TransportStore } from "../transport/store";
 import { capabilities } from "../transport/capabilities";
 import type { Viz, VizState } from "./types";
-import { RibbonViz } from "./ribbon";
-import { TonnetzViz } from "./tonnetz";
-import { SpiralViz } from "./spiral";
 import { PianoRollViz } from "./pianoroll";
 
 export function allVizzes(): Viz[] {
-  return [new TonnetzViz(), new RibbonViz(), new SpiralViz(), new PianoRollViz()];
+  return [new PianoRollViz()];
 }
 
 export interface StageOptions {

@@ -15,6 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **One view: the pitch roll.** Dropped the lattice, drift-ribbon, and circle-of-
+  fifths views and their tab switcher; the continuous-pitch roll is the single
+  representation and now carries the whole story.
+- **Source of truth made explicit.** The roll labels the reference line (1/1 — the
+  pitch everything is tuned from) and each note now flashes its *exact ratio* to
+  its anchor (the chord root: 1/1, 5/4, 3/2…; the opening note for melodic lines)
+  alongside its cents — so the relative, ratio-based nature of just intonation is
+  visible, and "home" is seen drifting away from the reference.
 - **Cents labels on the notes.** The pitch roll's cents read-outs now sit centred
   on each note and flash as it's struck (and the note flashes white), instead of
   floating to the right where they collided with other notes and the drift label.

@@ -28,7 +28,7 @@ test.describe("standalone applet (file://)", () => {
     await expect(page.locator("#stage")).toBeVisible();
     await expect(page.locator("#play")).toBeVisible();
     await expect(page.locator("#mode")).toBeVisible();
-    await expect(page.getByRole("tab")).toHaveCount(4);
+    await expect(page.locator("#stage canvas")).toBeVisible();
   });
 
   test("Play toggles and the tuning mode flips without throwing", async ({ page, errors }) => {

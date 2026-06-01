@@ -18,7 +18,7 @@ test.describe("prefers-reduced-motion", () => {
   test("content still renders", async ({ page }) => {
     await expect(page.locator(".hero")).toBeVisible();
     await expect(page.locator("#lab-stage")).toBeVisible();
-    await expect(page.getByRole("tab")).toHaveCount(4);
+    await expect(page.locator("#lab-stage canvas")).toBeVisible();
   });
 
   test("does not autoplay when an autoplay scene scrolls into view", async ({ page }) => {

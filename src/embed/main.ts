@@ -55,6 +55,8 @@ function init(): void {
     stageEl.setAttribute("aria-labelledby", `tab-${id}`);
     setHowTo(id);
   }
+  // With a single visualization there's nothing to switch — hide the tablist.
+  if (stage.list().length <= 1) switchEl.hidden = true;
   for (const v of stage.list()) {
     const b = document.createElement("button");
     b.className = "tab";

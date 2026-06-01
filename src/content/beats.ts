@@ -7,7 +7,7 @@
 export interface Scene {
   id: string;
   exampleId: string;
-  viz: "tonnetz" | "ribbon" | "spiral" | "pianoroll";
+  viz: "pianoroll";
   tuning?: "JI" | "ET";
   autoplay?: boolean;
   title: string;
@@ -18,7 +18,7 @@ export const SCENES: Scene[] = [
   {
     id: "hook",
     exampleId: "pump-i-vi-ii-v-i",
-    viz: "ribbon",
+    viz: "pianoroll",
     tuning: "JI",
     autoplay: true,
     title: "Sing a loop forever, and you sink",
@@ -30,7 +30,7 @@ export const SCENES: Scene[] = [
     viz: "pianoroll",
     tuning: "JI",
     title: "First, a ruler: the cent",
-    body: `<p>An octave is <strong>1200 cents</strong>; an equal-tempered semitone is 100. The comma we're chasing is about <strong>21.5¢</strong> — roughly a fifth of a semitone. Small, but it stacks up. The meter on the right reads each note's distance from the piano's pitch.</p>`,
+    body: `<p>An octave is <strong>1200 cents</strong>; an equal-tempered semitone is 100. The comma we're chasing is about <strong>21.5¢</strong> — roughly a fifth of a semitone. Small, but it stacks up. Each note's distance from the piano's pitch flashes on it as it plays.</p>`,
   },
   {
     id: "pure",
@@ -52,7 +52,7 @@ export const SCENES: Scene[] = [
   {
     id: "name",
     exampleId: "fifths-chain",
-    viz: "spiral",
+    viz: "pianoroll",
     tuning: "JI",
     title: "Meet the syntonic comma",
     body: `<p>Stack four pure fifths and drop two octaves and you get the Pythagorean third, 81/64 (≈408¢). The pure major third is 5/4 (≈386¢). The leftover — <strong>81/80, 21.5¢</strong> — is the syntonic comma. (Not to be confused with the Pythagorean comma, 23.5¢, from twelve fifths.)</p>`,
@@ -60,25 +60,25 @@ export const SCENES: Scene[] = [
   {
     id: "fifths",
     exampleId: "fifths-chain",
-    viz: "spiral",
+    viz: "pianoroll",
     tuning: "JI",
     autoplay: true,
     title: "The fifths that won't come home",
-    body: `<p>Walk up four pure fifths — C, G, D, A, E — then step home by a pure major third. You land a comma <strong>sharp</strong> of where you started. Fifths and thirds simply don't agree; the spiral never closes.</p>`,
+    body: `<p>Walk up four pure fifths — C, G, D, A, E — then step home by a pure major third. You land a comma <strong>sharp</strong> of where you started. Fifths and thirds simply don't agree, so the line can't come home.</p>`,
   },
   {
     id: "pump",
     exampleId: "pump-i-vi-ii-v-i",
-    viz: "tonnetz",
+    viz: "pianoroll",
     tuning: "JI",
     autoplay: true,
     title: "The pump",
-    body: `<p>Now the famous loop. Hold the D at 10/9 through the ii chord, reuse it as the fifth of G, and the resolving C is dragged <strong>down</strong> by a comma. On the lattice, the walk leaves "C" and arrives at a different node — every chord pure, yet home has moved.</p>`,
+    body: `<p>Now the famous loop. Hold the D at 10/9 through the ii chord, reuse it as the fifth of G, and the resolving C is dragged <strong>down</strong> by a comma. Watch the home trail leave the reference C and land a comma lower — every chord pure, yet home has moved.</p>`,
   },
   {
     id: "accumulate",
     exampleId: "pump-i-vi-ii-v-i",
-    viz: "ribbon",
+    viz: "pianoroll",
     tuning: "JI",
     autoplay: true,
     title: "And it keeps going",
@@ -95,7 +95,7 @@ export const SCENES: Scene[] = [
   {
     id: "piano",
     exampleId: "pump-i-vi-ii-v-i",
-    viz: "ribbon",
+    viz: "pianoroll",
     tuning: "ET",
     autoplay: true,
     title: "So why doesn't a piano drift?",

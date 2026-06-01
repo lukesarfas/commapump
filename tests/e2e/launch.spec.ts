@@ -30,12 +30,10 @@ test.describe("full-site launch", () => {
     await expect(page.locator('[data-scene="playground-anchor"]')).toBeVisible();
   });
 
-  test("the visualization tablist renders all four tabs", async ({ page }) => {
-    const tabs = page.getByRole("tab");
-    await expect(tabs).toHaveCount(4);
-    for (const label of ["Lattice walk", "Drift ribbon", "Circle of fifths", "Pitch roll"]) {
-      await expect(page.getByRole("tab", { name: label })).toBeVisible();
-    }
+  test("the pitch-roll visualization is mounted (single view, no tab switcher)", async ({ page }) => {
+    await expect(page.locator("#lab-stage canvas")).toBeVisible();
+    // the tablist is hidden when there's only one visualization
+    await expect(page.getByRole("tab")).toHaveCount(0);
   });
 
   test("the transport controls are visible", async ({ page }) => {

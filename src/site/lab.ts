@@ -103,7 +103,9 @@ export function initLab(): void {
   // tab stop at a time (roving tabindex), and Left/Right/Home/End move focus.
   const tabsEl = $("lab-tabs");
   const STAGE_ID = "lab-stage";
-  if (tabsEl) {
+  // With a single visualization there's nothing to switch — hide the tablist.
+  if (tabsEl && stage.list().length <= 1) tabsEl.hidden = true;
+  if (tabsEl && stage.list().length > 1) {
     for (const v of stage.list()) {
       const b = document.createElement("button");
       b.className = "tab";
@@ -138,8 +140,8 @@ export function initLab(): void {
     });
     // Point the panel at the initially-selected tab without re-announcing.
     $(STAGE_ID)?.setAttribute("aria-labelledby", `lab-tab-${stage.currentId()}`);
-    setHowTo(stage.currentId());
   }
+  setHowTo(stage.currentId());
   function setHowTo(id: string): void {
     const howto = $("lab-howto");
     if (howto) howto.textContent = stage.list().find((v) => v.id === id)?.howToRead ?? "";

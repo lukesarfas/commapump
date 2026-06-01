@@ -9,7 +9,14 @@
  */
 
 import type { Viz, VizState } from "./types";
+import type { Monzo } from "../core/index";
+import { subMonzo, octaveReduce, monzoToRational, ratioString } from "../core/index";
 import { activeNotes, homes, pitchName } from "./util";
+
+/** Exact ratio of a note relative to its chord root (the local anchor): "5/4", "3/2"… */
+function ratioToRoot(noteMonzo: Monzo, rootMonzo: Monzo): string {
+  return ratioString(monzoToRational(octaveReduce(subMonzo(noteMonzo, rootMonzo))));
+}
 
 const PALETTE = ["#f0b54a", "#e0875a", "#6fc3d6", "#c9a25e", "#d98f6a"];
 const FG = "#f3f1ea";
@@ -26,7 +33,7 @@ export class PianoRollViz implements Viz {
   readonly id = "pianoroll";
   readonly label = "Pitch roll";
   readonly howToRead =
-    "The vertical axis is real pitch, not piano keys. Faint lines are a piano’s notes (equal temperament); in just intonation each note sits a little off its line, and “home” sinks lower every loop. Switch to ET and watch every note glide onto the grid.";
+    "Vertical axis is real pitch, not piano keys. Each note flashes its exact ratio from the anchor (the chord’s root: 1/1, 5/4, 3/2…) and how far it lands from a piano. The dashed line is the reference — the source of truth — and “home” drifts a comma below it every loop. Switch to ET and the notes glide onto the grid.";
   private host: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
@@ -146,21 +153,33 @@ export class PianoRollViz implements Viz {
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // cents labels sit ON the notes: they flash as each note is struck (and stay
-    // up for the sounding chord while paused, so the picture is readable stopped).
+    // Source of truth: every pitch is an exact ratio from an anchor. For chords
+    // that anchor is the root (so the labels read 1/1, 5/4, 3/2…); for a melodic
+    // line it's the opening reference note. The labels flash on each note as it's
+    // struck (and stay up for the sounding chord while paused), so you can read
+    // both the ratio that *defines* the note and where it lands versus a piano.
+    const ref = notes.find((n) => n.chordIndex === 0 && n.voiceId === 0)?.monzo;
+    const rootOf = new Map<number, Monzo>();
+    const voiceCount = new Map<number, number>();
+    for (const n of notes) {
+      if (n.voiceId === 0) rootOf.set(n.chordIndex, n.monzo);
+      voiceCount.set(n.chordIndex, (voiceCount.get(n.chordIndex) ?? 0) + 1);
+    }
     ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
     ctx.textAlign = "center";
     for (const n of notes) {
       const fade = state.playing ? flashOf(n) : active.has(`${n.chordIndex}:${n.voiceId}`) ? 1 : 0;
       if (fade <= 0) continue;
       const dev = n.centsVsET * (1 - mix);
+      const anchor = (voiceCount.get(n.chordIndex) ?? 1) <= 1 ? ref : rootOf.get(n.chordIndex);
+      const ratio = anchor ? ratioToRoot(n.monzo, anchor) : "";
       const nx = xOf(n.startBeat);
       const nw = Math.max(3, (n.durBeats / total) * plotW - 2);
-      const cx = Math.min(Math.max(nx + nw / 2, PAD_L + 26), w - 26);
+      const cx = Math.min(Math.max(nx + nw / 2, PAD_L + 34), w - 34);
       const y = yOf(noteCents(n)) - NOTE_H / 2 - 7 - (1 - fade) * 5;
       ctx.globalAlpha = Math.min(1, fade + 0.15);
       ctx.fillStyle = dev < -0.5 ? FLAT : dev > 0.5 ? "#88c891" : ET;
-      ctx.fillText(`${dev >= 0 ? "+" : ""}${dev.toFixed(1)}¢`, cx, y);
+      ctx.fillText(`${ratio} · ${dev >= 0 ? "+" : ""}${dev.toFixed(1)}¢`, cx, y);
     }
     ctx.globalAlpha = 1;
     ctx.textAlign = "left";
@@ -193,15 +212,20 @@ function drawTonicTrail(
   });
   const pts = hs.map(pt);
 
-  // the C reference line (where an un-drifting tonic would stay)
+  // the reference line: the source of truth (1/1) — where an un-drifting tonic
+  // would stay. Everything else is tuned in ratios; "home" is meant to land here.
   const cY = yOf(hs[0].midiNominal * 100);
-  ctx.strokeStyle = "rgba(111,195,214,0.30)";
+  ctx.strokeStyle = "rgba(111,195,214,0.45)";
   ctx.setLineDash([4, 6]);
   ctx.beginPath();
   ctx.moveTo(x0, cY);
   ctx.lineTo(x0 + plotW, cY);
   ctx.stroke();
   ctx.setLineDash([]);
+  ctx.fillStyle = "#6fc3d6";
+  ctx.font = "600 11px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("reference · 1/1 (the source of truth)", x0 + 6, cY - 7);
 
   // staircase through the tonic arrivals
   ctx.strokeStyle = "rgba(224,138,106,0.85)";

@@ -47,6 +47,7 @@ html, body {
   gap: 6px;
   flex-wrap: wrap;
 }
+.switch[hidden] { display: none; }
 .tab {
   appearance: none;
   border: 1px solid var(--border);

@@ -34,40 +34,18 @@ test.describe("interaction", () => {
     await expect(mode).toHaveAttribute("aria-pressed", "false");
   });
 
-  test("each visualization renders non-empty content when selected", async ({ page, errors }) => {
-    const tabs = page.getByRole("tab");
-    const count = await tabs.count();
-    expect(count).toBe(4);
-    for (let i = 0; i < count; i++) {
-      const tab = tabs.nth(i);
-      await tab.click();
-      await expect(tab).toHaveAttribute("aria-selected", "true");
-      await page.waitForFunction(() => {
-        const host = document.querySelector("#lab-stage");
-        return Boolean(host?.querySelector("svg") || host?.querySelector("canvas"));
-      });
-      // give the rAF loop a frame or two to paint
-      await page.waitForTimeout(120);
-      const size = await stageContentSize(page);
-      expect(size, `viz #${i} should paint content`).toBeGreaterThan(0);
-    }
+  test("the pitch-roll visualization paints non-empty content", async ({ page, errors }) => {
+    await page.waitForFunction(() => Boolean(document.querySelector("#lab-stage canvas")));
+    await page.waitForTimeout(120); // give the rAF loop a frame or two to paint
+    expect(await stageContentSize(page)).toBeGreaterThan(0);
     expectNoPageErrors(errors);
   });
 
-  test("each visualization explains how to read it, and the caption changes per view", async ({ page }) => {
+  test("the visualization explains how to read it", async ({ page }) => {
     const howto = page.locator("#lab-howto");
-    const tabs = page.getByRole("tab");
-    const seen = new Set<string>();
-    const count = await tabs.count();
-    for (let i = 0; i < count; i++) {
-      await tabs.nth(i).click();
-      await expect(howto).toBeVisible();
-      const text = (await howto.textContent())?.trim() ?? "";
-      expect(text.length, `viz #${i} should have a how-to caption`).toBeGreaterThan(20);
-      seen.add(text);
-    }
-    // every view has its own explanation
-    expect(seen.size).toBe(count);
+    await expect(howto).toBeVisible();
+    const text = (await howto.textContent())?.trim() ?? "";
+    expect(text.length).toBeGreaterThan(20);
   });
 
   test("each example shows its own explanation that changes with the example", async ({ page }) => {
