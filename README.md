@@ -57,6 +57,21 @@ registers it with one line in `apps/luke.sarfas.com/src/data/projects.json`:
 { "slug": "commapump", "manifestUrl": "https://storage.googleapis.com/luke-sarfas-applets/commapump/manifest.json" }
 ```
 
+## Deploy
+
+The applet (embedded by the hub) and the full scroll-story site live in the same
+public bucket, at separate paths:
+
+```sh
+npm run deploy:applet   # build + rsync site/ → gs://luke-sarfas-applets/commapump/
+npm run deploy:site     # build full site (GCS base) + rsync dist/ → .../commapump-site/
+```
+
+`deploy:site` is a stopgap until `commapump.sarfas.com` (or a Firebase target) is
+wired up; it builds with `SITE_BASE` so assets resolve under the bucket subpath.
+Once a real host exists, drop `SITE_BASE`, deploy there, and repoint
+`manifest.base.json`'s `links.site`.
+
 ## Layout
 
 ```
