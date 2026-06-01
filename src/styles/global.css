@@ -6,6 +6,11 @@
   box-sizing: border-box;
 }
 
+/* Anchor jumps and scrollIntoView clear the sticky header instead of hiding under it. */
+html {
+  scroll-padding-top: 72px;
+}
+
 html,
 body {
   margin: 0;
@@ -50,6 +55,50 @@ h4 {
 a {
   color: var(--fg-soft);
   text-decoration-color: color-mix(in oklab, var(--signature) 50%, transparent);
+}
+
+/* Keyboard focus, in the signature accent. Mouse clicks stay clean. */
+:focus-visible {
+  outline: 3px solid var(--signature);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Fallback for engines without :focus-visible — better a visible ring than none. */
+:focus {
+  outline: 3px solid var(--signature);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+/* The skip-link target is a focus container, not a control — no ring on it. */
+main:focus {
+  outline: none;
+}
+
+/* Skip-link: visually hidden until focused, then pinned top-left. */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  padding: 0.6rem 0.9rem;
+  background: var(--bg-1);
+  color: var(--fg);
+  border: 1px solid var(--signature);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-150%);
+  transition: transform 160ms var(--ease);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
 }
 
 .text-gradient {

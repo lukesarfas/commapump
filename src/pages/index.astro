@@ -29,7 +29,7 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
 
 <Base>
   <Header />
-  <main>
+  <main id="main" tabindex="-1">
     <section class="hero">
       <Container>
         <p class="eyebrow">The comma pump · syntonic comma drift</p>
@@ -70,13 +70,28 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
     <section id="story" class="lab-section">
       <Container>
         <div class="lab-layout">
-          <div class="lab-figure">
-            <div id="lab-tabs" class="switch" role="tablist" aria-label="Visualization"></div>
-            <div id="lab-stage" class="stage"></div>
+          <div class="lab-figure" aria-label="The comma-pump lab" role="group">
+            <div id="lab-tabs" class="switch" role="tablist" aria-label="Choose a visualization"></div>
+            <div id="lab-stage" class="stage" role="tabpanel" tabindex="0" aria-label="Visualization">
+              {/* Replaced by the engine once the first visualization mounts. */}
+              <div class="stage-loading" data-testid="lab-stage-loading">
+                <span class="spinner" aria-hidden="true"></span>
+                <span>Loading the lab…</span>
+              </div>
+            </div>
+            {/*
+              Audio-capability slot. Hidden by default; the engine (UI-engine)
+              removes the [hidden] attribute when it detects that Web Audio is
+              unavailable in this browser. role="alert" announces it on reveal.
+            */}
+            <p id="lab-audio-unavailable" class="audio-warning" role="alert" data-testid="lab-audio-unavailable" hidden>
+              Audio isn't available in this browser, so the lab is silent — the
+              visualizations and the drift readout still work.
+            </p>
             <div class="lab-bar">
               <button id="lab-play" type="button" class="btn primary">▶ Play</button>
               <div id="lab-readout" class="readout" aria-live="off"></div>
-              <button id="lab-mode" type="button" class="btn" aria-pressed="false">Just intonation</button>
+              <button id="lab-mode" type="button" class="btn" aria-pressed="false" aria-label="Toggle tuning between just intonation and equal temperament">Just intonation</button>
             </div>
             <p id="lab-live" class="sr-only" aria-live="polite"></p>
           </div>
@@ -91,18 +106,20 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
 
             <article class="step playground" id="playground" data-scene="playground-anchor">
               <h2>Your turn</h2>
-              <p>Pick an example, switch tuning, and let the drift accumulate. The lab on the left is live.</p>
-              <div id="lab-examples" class="chips" aria-label="Examples"></div>
+              <p>Pick an example, switch tuning, and let the drift accumulate — the lab updates live.</p>
+              <div id="lab-examples" class="chips" role="group" aria-label="Choose an example progression"></div>
               <div class="controls">
-                <label>
-                  Loops <input id="lab-cycles" type="range" min="1" max="6" value="4" />
-                  <span id="lab-cycles-out" class="num">4</span>
+                <label for="lab-cycles">
+                  Loops
+                  <input id="lab-cycles" type="range" min="1" max="6" value="4" />
+                  <span id="lab-cycles-out" class="num" aria-hidden="true">4</span>
                 </label>
-                <label>
-                  Tempo <input id="lab-tempo" type="range" min="50" max="140" value="90" />
+                <label for="lab-tempo">
+                  Tempo
+                  <input id="lab-tempo" type="range" min="50" max="140" value="90" />
                 </label>
               </div>
-              <p class="hint">Tip: play the pump in <strong>just intonation</strong>, then hit the tuning button to hear it stop drifting in equal temperament.</p>
+              <p class="hint">Tip: play the pump in <strong>just intonation</strong>, then press the tuning button to hear it stop drifting in equal temperament.</p>
             </article>
           </div>
         </div>
@@ -116,11 +133,15 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
         <div class="scores">
           <figure>
             <figcaption>The pump — I–vi–ii–V–I</figcaption>
-            <div class="score" data-abc={PUMP_ABC}></div>
+            <div class="score" data-abc={PUMP_ABC}>
+              <p class="score-loading">Engraving notation…</p>
+            </div>
           </figure>
           <figure>
             <figcaption>The fifths chain — C–G–D–A–E–C</figcaption>
-            <div class="score" data-abc={FIFTHS_ABC}></div>
+            <div class="score" data-abc={FIFTHS_ABC}>
+              <p class="score-loading">Engraving notation…</p>
+            </div>
           </figure>
         </div>
       </Container>
@@ -224,6 +245,36 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
     overflow: hidden;
   }
   .stage svg { width: 100%; height: 100%; display: block; }
+  .stage-loading {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    border-top-color: var(--signature);
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .audio-warning {
+    margin: 0.6rem 0 0;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--signature-warm) 45%, var(--border-strong));
+    border-radius: var(--radius-sm);
+    background: color-mix(in oklab, var(--signature-warm) 10%, transparent);
+    color: var(--fg-soft);
+    font-size: 0.85rem;
+  }
+
   .switch { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.6rem; }
   .lab-bar { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.6rem; flex-wrap: wrap; }
   .readout { color: var(--signature); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 0.9rem; margin-right: auto; }
@@ -263,6 +314,11 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
   .btn:hover { border-color: var(--accent); }
   .btn.primary { background: var(--grad-1); color: #1a140a; border-color: transparent; font-weight: 600; }
   .btn[aria-pressed="true"] { border-color: var(--et); color: var(--et); }
+  /* A disabled control must read as dead, not fully active (SPEC §4.3). */
+  .btn:disabled,
+  .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.3); }
+  .btn:disabled:hover,
+  .btn[aria-disabled="true"]:hover { border-color: var(--border-strong); }
   .tab {
     appearance: none;
     border: 1px solid var(--border);
@@ -292,6 +348,7 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
   .muted { color: var(--muted); }
   .scores { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
   .score { background: #faf8f2; border-radius: var(--radius); padding: 0.5rem 1rem; overflow-x: auto; }
+  .score-loading { color: #6b6457; font-size: 0.85rem; margin: 0.5rem 0; }
   figure { margin: 0; }
   figcaption { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
 
@@ -305,5 +362,38 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
     .lab-figure { order: 2; align-self: start; }
     .lab-steps { order: 1; }
     .scores { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* Phones: let the lab scroll with the prose instead of pinning it — a sticky
+     16:10 stage would otherwise cover most of the viewport and hide the steps.
+     Steps lose their tall min-height so the page reads as a normal column. */
+  @media (max-width: 480px) {
+    .lab-figure {
+      position: static;
+      top: auto;
+    }
+    .step {
+      min-height: auto;
+      padding: 1.25rem 0;
+      max-width: none;
+    }
+    .lab-bar { gap: 0.5rem; }
+    .lab-bar .btn { flex: 1 1 auto; }
+    .readout {
+      flex-basis: 100%;
+      margin-right: 0;
+      order: 3;
+    }
+    .controls { gap: 1rem; }
+    .controls label { flex: 1 1 100%; }
+    .controls input[type="range"] { flex: 1 1 auto; min-width: 0; }
+    .cta :global(.sarfas-btn) { flex: 1 1 auto; justify-content: center; }
+  }
+
+  /* The spinner is the one looping animation in the lab; stop it for reduced
+     motion (the global rule already neutralizes transitions, but the spinner's
+     duration override would still leave it visibly spinning). */
+  @media (prefers-reduced-motion: reduce) {
+    .spinner { animation: none; }
   }
 </style>

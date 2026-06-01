@@ -24,7 +24,11 @@ export class TonnetzViz implements Viz {
   private root: SVGElement | null = null;
 
   mount(host: HTMLElement): void {
-    this.root = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+    this.root = svg("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": "Tonnetz lattice walk: the progression's path across a grid of pure fifths and major thirds.",
+    });
     host.replaceChildren(this.root);
   }
 
@@ -57,7 +61,7 @@ export class TonnetzViz implements Viz {
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
         g.append(svg("circle", { cx: sx(x), cy: sy(y), r: 3, fill: "var(--fg)", opacity: 0.14 }));
-        g.append(svg("text", { x: sx(x), y: sy(y) - 8, fill: "var(--muted)", "font-size": 11, "text-anchor": "middle", opacity: 0.5 }, nodeName(x, y)));
+        g.append(svg("text", { x: sx(x), y: sy(y) - 8, fill: "var(--muted)", "font-size": 11, "text-anchor": "middle" }, nodeName(x, y)));
       }
     }
 

@@ -26,7 +26,21 @@ export class PianoRollViz implements Viz {
     this.canvas.style.width = "100%";
     this.canvas.style.height = "100%";
     this.canvas.style.display = "block";
+    // Parity with the SVG vizzes (role="img" + aria-label) so the active tabpanel
+    // never holds an unlabeled graphic (SPEC §4.3).
+    this.canvas.setAttribute("role", "img");
+    this.canvas.setAttribute(
+      "aria-label",
+      "Piano-roll with a live cents meter: each sounding note plotted against time, its distance from equal temperament read out on the right.",
+    );
     this.ctx = this.canvas.getContext("2d");
+    // On a host without Canvas 2D (capabilities().canvas2d === false) getContext
+    // returns null; show a short message rather than an empty canvas so the stage
+    // never silently blanks — the other (SVG) tabs still work. SPEC §4.2.
+    if (!this.ctx) {
+      host.replaceChildren(fallback());
+      return;
+    }
     host.replaceChildren(this.canvas);
   }
 
@@ -154,6 +168,22 @@ export class PianoRollViz implements Viz {
     this.canvas = null;
     this.ctx = null;
   }
+}
+
+/**
+ * A non-blank message for hosts where a 2D canvas context can't be obtained.
+ * Styled inline (no class dependency) so it stays legible and centred on both
+ * the full site and the applet without reaching into either surface's CSS.
+ */
+function fallback(): HTMLElement {
+  const p = document.createElement("p");
+  p.setAttribute("role", "note");
+  p.style.cssText =
+    "display:flex;width:100%;height:100%;margin:0;box-sizing:border-box;" +
+    "align-items:center;justify-content:center;text-align:center;" +
+    "padding:1.5rem;color:var(--muted,#9b958a);font:0.9rem/1.5 ui-sans-serif,system-ui,sans-serif;";
+  p.textContent = "This visualization needs Canvas 2D, which isn't available here — try another tab.";
+  return p;
 }
 
 function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {

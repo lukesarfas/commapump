@@ -1,0 +1,56 @@
+# Continuous integration: build, unit tests, and E2E on every push and PR.
+# The applet size-check runs inside `npm run build` and fails the build if the
+# ≤200 KB gzip budget is blown, so a green build asserts the budget held.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Dependency-hygiene gate (SPEC §5). Fails on any high/critical advisory in
+      # the production dependency tree — the only code that ships. Dev/test-only
+      # residual advisories (vitest UI server, bundled esbuild/vite) require
+      # breaking majors and are documented exceptions in SECURITY.md; gating
+      # prod deps keeps the check meaningful without going red on those.
+      - name: Dependency audit (production deps)
+        run: npm audit --omit=dev --audit-level=high
+
+      # Builds the site + applet and runs scripts/size-check.mjs; a non-zero
+      # exit here means the applet exceeded its first-paint budget.
+      - name: Build (includes applet size-check)
+        run: npm run build
+
+      - name: Unit tests
+        run: npx vitest run
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

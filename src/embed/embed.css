@@ -15,6 +15,19 @@
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
+/* Visible keyboard focus in the signature accent (SPEC §4.3). This applet is a
+   standalone document, so it can't inherit the full site's focus ring. */
+:focus-visible {
+  outline: 3px solid var(--signature);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Fallback for engines without :focus-visible — better a visible ring than none. */
+:focus {
+  outline: 3px solid var(--signature);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) { outline: none; }
 html, body {
   margin: 0;
   height: 100%;
@@ -93,3 +106,15 @@ html, body {
   font-weight: 600;
 }
 .btn[aria-pressed="true"] { border-color: var(--et); color: var(--et); }
+/* A disabled control must read as dead, not fully active (SPEC §4.3). */
+.btn:disabled,
+.btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; filter: grayscale(0.3); }
+.btn:disabled:hover,
+.btn[aria-disabled="true"]:hover { border-color: var(--border); }
+/* The audio-unavailable note: empty until main.ts fills it, so it takes no space. */
+.audio-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(0.72rem, 1.7vmin, 0.85rem);
+}
+.audio-note:empty { display: none; }

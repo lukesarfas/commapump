@@ -1,0 +1,19 @@
+# Keep dependencies current for security hygiene (SPEC §5). Weekly npm updates
+# and GitHub Actions pin bumps; grouped to keep PR noise low.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

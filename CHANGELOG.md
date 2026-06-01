@@ -1,0 +1,82 @@
+# Changelog
+
+All notable changes to CommaPump are documented here.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+## [1.0.0] — 2026-06-01
+
+Production hardening. The explainer became shippable: crash-proof on every
+launch, accessible, secured, cost-protected, fully documented, and
+marketing-ready.
+
+### Added
+
+- **Launch reliability & crash-proofing.** Feature detection for Web Audio,
+  Canvas 2D, and IntersectionObserver; per-visualization and per-audio error
+  isolation so a single failure never blanks the page; SSR hero for guaranteed
+  first paint even without JS.
+- **Accessibility (WCAG 2.1 AA target).** Full keyboard operation, visible focus,
+  correct roles/labels/`aria-pressed`/tablist semantics, `aria-live` drift
+  announcements, `prefers-reduced-motion` support (no autoplay/animation, static
+  frames, audio still available), and non-color cues.
+- **Security.** Strict `<meta>` Content-Security-Policy on every document
+  (`default-src 'none'`, no `unsafe-inline` for scripts; `style-src` uses
+  `'unsafe-inline'` for Astro-scoped and abcjs-injected inline `<style>`); the
+  applet's single inlined script is pinned by sha256 computed at build time;
+  `SECURITY.md` with threat model and responsible-disclosure contact; Dependabot
+  for npm + Actions; `npm ci` in CI.
+- **Cost protections.** Two-tier Cache-Control on deploy (immutable hashed assets,
+  short-lived HTML/manifest); `docs/COST.md` documenting the egress model,
+  expected cents/month, the CDN guide, and a $5 billing budget with 50/90/100%
+  alerts.
+- **Testing.** Playwright E2E (desktop Chromium + mobile) covering launch,
+  no-console-errors, visibility, interaction, standalone applet, mobile viewport,
+  and reduced-motion; `@axe-core/playwright` accessibility checks; CI workflow
+  running build + unit + E2E + applet size-check on every push/PR.
+- **Performance.** rAF render loop pauses when the lab is offscreen or the tab is
+  hidden; abcjs made lazy and full-site only; Canvas sized to device pixel ratio;
+  applet first-paint budget enforced at ≤200 KB gzip.
+- **Documentation & marketing.** `docs/ARCHITECTURE.md`, `SECURITY.md`,
+  `docs/COST.md`, `docs/DEPLOYMENT.md`, `CONTRIBUTING.md`, this changelog,
+  `docs/MARKETING.md` (positioning, taglines, launch copy, OG image note), and a
+  refreshed `README.md`. Real OG/preview metadata and 1600×900 preview image.
+
+### Changed
+
+- README refreshed to reflect the production-ready state and link the full doc
+  set.
+
+## [0.1.0] — 2026-05
+
+Initial implementation: the idea, working end to end.
+
+### Added
+
+- **Pure 5-limit tuning engine** (`src/core/`): exact interval math over BigInt
+  monzos — ratios, primes, just intonation, equal temperament, the syntonic and
+  Pythagorean commas, chords, progressions, and `schedule()`, which flattens a
+  chord loop into a timeline of notes each carrying both its just and
+  equal-tempered frequency. Vitest-verified (cents, drift per cycle, ratios).
+- **Audio engine** (`src/audio/`): raw Web Audio synthesis with a look-ahead
+  ("Tale of Two Clocks") scheduler for sample-accurate, exact-ratio playback;
+  live JI⇄ET tuning swaps without rescheduling.
+- **Transport** (`src/transport/`): a single `TransportStore` shared by audio and
+  visuals, with a notifying discrete-state path and a silent hot playhead path.
+- **Four synced visualizations** (`src/viz/`): just-intonation lattice walk,
+  drift ribbon, a circle of fifths that won't close, and a piano-roll with a live
+  cents meter — all reading one schedule on one playhead.
+- **Full site** (`src/site/`, `src/pages/`): scroll-driven story plus a free
+  playground, both driving the same store; lazy abcjs notation.
+- **Embeddable applet** (`src/embed/`): the whole thing in miniature, bundled and
+  inlined into a single self-contained `site/applet/index.html`.
+- **Remote-applet contract**: `manifest.json` / `preview.png` generation, the
+  publish-to-GCS workflow, and the size-check budget gate.
+- `docs/SPEC.md`, initial `README.md`, and MIT `LICENSE`.
+
+[Unreleased]: https://github.com/lukesarfas/commapump/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/lukesarfas/commapump/releases/tag/v1.0.0
+[0.1.0]: https://github.com/lukesarfas/commapump/releases/tag/v0.1.0

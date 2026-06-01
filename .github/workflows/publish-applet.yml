@@ -56,6 +56,21 @@ jobs:
           gcloud storage rsync site/ "gs://${BUCKET}/${APPLET_SLUG}/" \
             --recursive --delete-unmatched-destination-objects
 
+      # Stamp Cache-Control to match the deploy:applet npm script. applet/** is a
+      # single unhashed, stable-URL document (applet/index.html), so it gets the
+      # SAME short policy as the other HTML/manifest — never `immutable`, which is
+      # only safe on content-addressed URLs and would otherwise pin stale applet
+      # bytes at the edge for up to a year. Short max-age lets the hub pick up new
+      # bytes within ~5 minutes. rsync alone leaves the bucket default (effectively
+      # none), which would re-egress on every view.
+      - name: Stamp Cache-Control headers
+        run: |
+          gcloud storage objects update \
+            "gs://${BUCKET}/${APPLET_SLUG}/applet/**" \
+            "gs://${BUCKET}/${APPLET_SLUG}/*.html" \
+            "gs://${BUCKET}/${APPLET_SLUG}/manifest.json" \
+            --cache-control="public, max-age=300"
+
       - name: Trigger hub rebuild
         if: ${{ secrets.WEBSITE_DISPATCH_TOKEN != '' }}
         run: |

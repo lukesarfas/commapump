@@ -15,7 +15,11 @@ export class RibbonViz implements Viz {
   private root: SVGElement | null = null;
 
   mount(host: HTMLElement): void {
-    this.root = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+    this.root = svg("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": "Drift ribbon: a vertical cents axis where each home arrival sits one syntonic comma lower than the last.",
+    });
     host.replaceChildren(this.root);
   }
 

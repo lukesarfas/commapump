@@ -6,6 +6,7 @@
 
 import type { ScheduleResult, ScheduledNote } from "../core/index";
 import type { TransportStore, TuningMode } from "../transport/store";
+import { isAudioAvailable } from "../transport/capabilities";
 import { getAudioContext, unlockAudio } from "./context";
 import { createMaster, type Master } from "./master";
 import { createVoice, type Voice } from "./voice";
@@ -22,8 +23,18 @@ export class AudioEngine {
   private scheduler: Scheduler | null = null;
   private result: ScheduleResult | null = null;
   private active = new Set<ActiveVoice>();
+  /** False when Web Audio is missing or the context failed to build. */
+  readonly available: boolean;
+  private failed = false;
 
-  constructor(private store: TransportStore) {}
+  constructor(private store: TransportStore) {
+    this.available = isAudioAvailable();
+  }
+
+  /** Whether sound can actually be produced on this host. UI reveals a message when false. */
+  isAvailable(): boolean {
+    return this.available && !this.failed;
+  }
 
   load(result: ScheduleResult): void {
     this.result = result;
@@ -34,8 +45,12 @@ export class AudioEngine {
 
   /** Warm up the AudioContext inside a user gesture so later autoplay works. */
   async unlock(): Promise<void> {
-    this.ensure();
-    await unlockAudio();
+    if (!this.ensure()) return;
+    try {
+      await unlockAudio();
+    } catch (err) {
+      this.fail(err);
+    }
   }
 
   /** Live playhead (beats) — scheduler clock while playing, stored beat otherwise. */
@@ -46,14 +61,21 @@ export class AudioEngine {
 
   async play(): Promise<void> {
     if (!this.result) return;
-    this.ensure();
-    await unlockAudio();
-    const bps = this.store.get().bpm / 60;
-    this.scheduler!.bps = bps;
-    this.scheduler!.load(this.result.notes, this.result.totalBeats);
-    const from = this.store.get().beat >= this.result.totalBeats ? 0 : this.store.get().beat;
-    this.scheduler!.start(from);
+    if (!this.ensure()) return;
+    // Flip the transport optimistically so the UI label and readout track the
+    // gesture synchronously; the AudioContext resume below settles after. fail()
+    // reverts to playing:false if the context genuinely can't start.
     this.store.set({ playing: true });
+    try {
+      await unlockAudio();
+      const bps = this.store.get().bpm / 60;
+      this.scheduler!.bps = bps;
+      this.scheduler!.load(this.result.notes, this.result.totalBeats);
+      const from = this.store.get().beat >= this.result.totalBeats ? 0 : this.store.get().beat;
+      this.scheduler!.start(from);
+    } catch (err) {
+      this.fail(err);
+    }
   }
 
   pause(): void {
@@ -72,6 +94,8 @@ export class AudioEngine {
   seek(beat: number): void {
     const clamped = Math.max(0, Math.min(beat, this.result?.totalBeats ?? 0));
     const wasPlaying = this.store.get().playing;
+    // Pick up any live tempo change so the restarted clock matches handleSchedule's durations.
+    if (this.scheduler) this.scheduler.bps = this.store.get().bpm / 60;
     this.scheduler?.stop();
     this.releaseAll();
     this.store.setBeat(clamped);
@@ -97,17 +121,39 @@ export class AudioEngine {
     this.releaseAll();
   }
 
-  private ensure(): void {
-    if (this.ctx) return;
-    this.ctx = getAudioContext();
-    this.master = createMaster(this.ctx);
-    this.scheduler = new Scheduler({
-      ctx: this.ctx,
-      bps: this.store.get().bpm / 60,
-      onSchedule: this.handleSchedule,
-      onEnd: this.handleEnd,
-    });
-    if (this.result) this.scheduler.load(this.result.notes, this.result.totalBeats);
+  /** Build the audio graph on demand. Returns false (and stays silent) if it can't. */
+  private ensure(): boolean {
+    if (this.failed) return false;
+    if (this.ctx) return true;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) {
+        this.fail(new Error("Web Audio unavailable"));
+        return false;
+      }
+      this.ctx = ctx;
+      this.master = createMaster(ctx);
+      this.scheduler = new Scheduler({
+        ctx,
+        bps: this.store.get().bpm / 60,
+        onSchedule: this.handleSchedule,
+        onEnd: this.handleEnd,
+      });
+      if (this.result) this.scheduler.load(this.result.notes, this.result.totalBeats);
+      return true;
+    } catch (err) {
+      this.fail(err);
+      return false;
+    }
+  }
+
+  /** Latch the failure, log it once, and make sure the UI reflects "not playing". */
+  private fail(err: unknown): void {
+    if (!this.failed) {
+      this.failed = true;
+      console.warn("CommaPump: audio unavailable, continuing without sound.", err);
+    }
+    this.store.set({ playing: false });
   }
 
   private handleSchedule = (note: ScheduledNote, when: number): void => {

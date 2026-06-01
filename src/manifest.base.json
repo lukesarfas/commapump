@@ -3,8 +3,8 @@
   "slug": "commapump",
   "tagline": "Hear just-intonation music drift out of tune.",
   "description": "An interactive explainer and playground for the syntonic comma pump. Play a chord loop that's perfectly in tune — every fifth and third pure — and watch (and hear) the key sink by a comma each cycle. Four synced visualizations: a just-intonation lattice walk, a drift ribbon, a circle of fifths that won't close, and a piano-roll with a live cents meter.",
-  "status": "wip",
-  "version": "0.1.0",
+  "status": "released",
+  "version": "1.0.0",
   "accent": "#f0b54a",
   "tags": ["music", "web-audio", "dataviz", "tuning"],
   "links": {

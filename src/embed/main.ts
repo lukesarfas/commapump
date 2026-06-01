@@ -29,20 +29,55 @@ function init(): void {
   const stage = new Stage({ host: stageEl, store, getBeat: () => engine.getBeat(), result });
   stage.start();
 
+  // Degrade to silent visuals when this host has no Web Audio. A title alone
+  // doesn't reach touch users or many screen readers, so surface a visible,
+  // announced note and mark the dead Play control disabled (embed.css greys it).
+  if (!engine.isAvailable()) {
+    playBtn.disabled = true;
+    playBtn.setAttribute("aria-disabled", "true");
+    const note = byId("audio-note");
+    if (note) note.textContent = "Audio isn't available in this browser; the visuals still work.";
+  }
+
+  // APG tablist: #stage is the single tabpanel (aria-controls), one tab is the
+  // tab stop at a time (roving tabindex), Left/Right/Home/End move focus.
+  function selectViz(id: string): void {
+    stage.show(id);
+    switchEl.querySelectorAll<HTMLButtonElement>(".tab").forEach((t) => {
+      const on = t.dataset.viz === id;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+    });
+    stageEl.setAttribute("aria-labelledby", `tab-${id}`);
+  }
   for (const v of stage.list()) {
     const b = document.createElement("button");
     b.className = "tab";
     b.type = "button";
+    b.id = `tab-${v.id}`;
     b.textContent = v.label;
+    b.dataset.viz = v.id;
     b.setAttribute("role", "tab");
-    b.setAttribute("aria-selected", String(v.id === stage.currentId()));
-    b.addEventListener("click", () => {
-      stage.show(v.id);
-      switchEl.querySelectorAll(".tab").forEach((t) => t.setAttribute("aria-selected", "false"));
-      b.setAttribute("aria-selected", "true");
-    });
+    b.setAttribute("aria-controls", "stage");
+    const selected = v.id === stage.currentId();
+    b.setAttribute("aria-selected", String(selected));
+    b.tabIndex = selected ? 0 : -1;
+    b.addEventListener("click", () => selectViz(v.id));
     switchEl.append(b);
   }
+  stageEl.setAttribute("aria-labelledby", `tab-${stage.currentId()}`);
+  switchEl.addEventListener("keydown", (e) => {
+    const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+    if (!keys.includes(e.key)) return;
+    const tabs = Array.from(switchEl.querySelectorAll<HTMLButtonElement>(".tab"));
+    const i = tabs.findIndex((t) => t === document.activeElement);
+    if (i < 0) return;
+    e.preventDefault();
+    const next =
+      e.key === "Home" ? 0 : e.key === "End" ? tabs.length - 1 : e.key === "ArrowLeft" ? (i - 1 + tabs.length) % tabs.length : (i + 1) % tabs.length;
+    selectViz(tabs[next].dataset.viz!);
+    tabs[next].focus();
+  });
 
   playBtn.addEventListener("click", () => engine.toggle());
   modeBtn.addEventListener("click", () => engine.setTuning(store.get().tuning === "JI" ? "ET" : "JI"));
@@ -62,5 +97,14 @@ function init(): void {
   }
 }
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-else init();
+/** Boot the applet, isolating any failure so the iframe never shows a blank page. */
+function boot(): void {
+  try {
+    init();
+  } catch (err) {
+    console.warn("CommaPump: applet failed to initialize.", err);
+  }
+}
+
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+else boot();

@@ -21,8 +21,8 @@ import Container from "~/components/ui/Container.astro";
       <span>CommaPump</span>
     </a>
     <nav class="nav">
-      <a href="/#story">The story</a>
-      <a href="/#playground">Playground</a>
+      <a href="/#story" class="nav-anchor">The story</a>
+      <a href="/#playground" class="nav-anchor">Playground</a>
       <a href="https://luke.sarfas.com" class="cta" rel="noopener">luke.sarfas.com</a>
     </nav>
   </Container>
@@ -84,6 +84,14 @@ import Container from "~/components/ui/Container.astro";
     .nav a {
       padding: 0.4rem 0.5rem;
       font-size: 0.82rem;
+    }
+  }
+  /* On phones the brand plus three links overrun the row. The two in-page
+     anchors are redundant there (the hero CTAs already jump to story/playground),
+     so collapse them and keep the brand and the external site link. */
+  @media (max-width: 480px) {
+    .nav-anchor {
+      display: none;
     }
   }
 </style>

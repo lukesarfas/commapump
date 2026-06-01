@@ -94,7 +94,20 @@ for (let s = 0; s < steps; s++) {
 }
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const outDir = resolve(root, "site");
-await mkdir(outDir, { recursive: true });
-await writeFile(resolve(outDir, "preview.png"), encodePng(W, H, px));
-console.log("[make-preview] wrote site/preview.png (1600×900)");
+const png = encodePng(W, H, px);
+
+// The applet deploy bundle (site/) and the full-site OG image both need this.
+// The full site references /preview.png (Base.astro's og:image); Astro serves
+// static assets from public/, so write there to make every future build include
+// dist/preview.png. astro build has already run by the time this script fires,
+// so also drop it straight into dist/ to make the current build serve it now.
+const targets = [
+  resolve(root, "site", "preview.png"),
+  resolve(root, "public", "preview.png"),
+  resolve(root, "dist", "preview.png"),
+];
+for (const out of targets) {
+  await mkdir(dirname(out), { recursive: true });
+  await writeFile(out, png);
+}
+console.log("[make-preview] wrote preview.png (1600×900) to site/, public/, dist/");

@@ -22,10 +22,24 @@ const ogImage = new URL("/preview.png", Astro.site ?? "https://commapump.sarfas.
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#1a1814" />
+    {/*
+      Strict CSP for a static, no-backend site (SPEC §5). Astro emits hashed
+      external scripts/styles under /_astro, so 'self' covers them without
+      'unsafe-inline' for scripts. 'unsafe-inline' is required only for styles:
+      Astro inlines scoped component <style> blocks and abcjs injects inline
+      <style> into the engraved SVG at runtime. img-src allows data: URIs for
+      inline SVG/canvas exports. frame-ancestors/sandbox are not honored in a
+      meta CSP — the embedding hub (luke.sarfas.com) controls iframe sandboxing.
+    */}
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <MetaTags title={title} description={description} url={url} image={ogImage} imageAlt="The comma pump visualized on a just-intonation lattice." />
   </head>
   <body>
+    <a href="#main" class="skip-link">Skip to content</a>
     <slot />
   </body>
 </html>

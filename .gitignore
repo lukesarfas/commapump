@@ -8,6 +8,11 @@ dist/
 # before publishing, so none of it is committed.
 /site/
 
+# Playwright artifacts
+test-results/
+playwright-report/
+.cache/
+
 # Large reference recordings are not committed (link out instead).
 public/audio/*.mp3
 public/audio/*.m4a

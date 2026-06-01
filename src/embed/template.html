@@ -3,18 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      Strict applet CSP. The single inlined script below is pinned by hash:
+      build-applet.mjs computes sha256 of the exact inlined script text and
+      substitutes __APPLET_SCRIPT_HASH__, so no 'unsafe-inline' is needed.
+      (frame-ancestors/sandbox aren't honored in meta — the hub iframe controls those.)
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'sha256-__APPLET_SCRIPT_HASH__'; style-src 'unsafe-inline'; img-src 'self' data:; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
     <title>CommaPump</title>
     <style>/*__CSS__*/</style>
   </head>
   <body>
     <main id="app" aria-label="The comma pump: a chord loop that drifts a comma per cycle">
       <div id="switch" class="switch" role="tablist" aria-label="Visualization"></div>
-      <div id="stage"></div>
+      <div id="stage" role="tabpanel" tabindex="0" aria-label="Visualization"></div>
       <div id="bar">
         <button id="play" type="button" class="btn primary">▶ Play</button>
         <div id="readout" aria-live="polite"></div>
         <button id="mode" type="button" class="btn" aria-pressed="false">Just intonation</button>
       </div>
+      <!-- Filled by main.ts only when Web Audio is unavailable; role=status surfaces it to AT. -->
+      <p id="audio-note" class="audio-note" role="status"></p>
     </main>
     <script>/*__JS__*/</script>
   </body>

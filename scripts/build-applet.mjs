@@ -7,6 +7,7 @@ import { build } from "esbuild";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { createHash } from "node:crypto";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const entry = resolve(root, "src/embed/main.ts");
@@ -29,10 +30,23 @@ const js = result.outputFiles[0].text;
 const css = await readFile(cssPath, "utf8");
 const template = await readFile(templatePath, "utf8");
 
+// The applet inlines exactly one module script. Its text is `js` verbatim, so
+// the CSP sha256 must hash that exact string (base64). The template's meta CSP
+// carries a __APPLET_SCRIPT_HASH__ token inside script-src; pinning the hash
+// lets the strict policy admit this one script without `unsafe-inline`.
+const scriptHash = createHash("sha256").update(js, "utf8").digest("base64");
+
 // Function replacements avoid `$` being treated as a special pattern.
-const html = template
+let html = template
   .replace("/*__CSS__*/", () => css)
-  .replace("/*__JS__*/", () => js);
+  .replace("/*__JS__*/", () => js)
+  .replaceAll("__APPLET_SCRIPT_HASH__", () => scriptHash);
+
+if (template.includes("__APPLET_SCRIPT_HASH__")) {
+  console.log(`[build-applet] pinned inline script CSP hash sha256-${scriptHash}`);
+} else {
+  console.warn("[build-applet] WARN: no __APPLET_SCRIPT_HASH__ token in template; CSP hash not pinned.");
+}
 
 await mkdir(outDir, { recursive: true });
 await writeFile(outFile, html, "utf8");

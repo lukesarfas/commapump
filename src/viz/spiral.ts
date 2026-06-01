@@ -26,7 +26,11 @@ export class SpiralViz implements Viz {
   private root: SVGElement | null = null;
 
   mount(host: HTMLElement): void {
-    this.root = svg("svg", { viewBox: `0 0 ${W} ${H}`, role: "img" });
+    this.root = svg("svg", {
+      viewBox: `0 0 ${W} ${H}`,
+      role: "img",
+      "aria-label": "Circle of fifths spiral: each cycle rings outward and the tonic rotates off twelve o'clock, so the loop never closes.",
+    });
     host.replaceChildren(this.root);
   }
 
@@ -44,7 +48,7 @@ export class SpiralViz implements Viz {
       const a = (i / 12) * Math.PI * 2;
       const x = CX + Math.sin(a) * (outer + 22);
       const y = CY - Math.cos(a) * (outer + 22);
-      g.append(svg("text", { x, y, fill: "var(--muted)", "font-size": 12, "text-anchor": "middle", "dominant-baseline": "middle", opacity: 0.55 }, COF[i]));
+      g.append(svg("text", { x, y, fill: "var(--muted)", "font-size": 12, "text-anchor": "middle", "dominant-baseline": "middle" }, COF[i]));
       g.append(svg("line", { x1: CX + Math.sin(a) * R0 * 0.7, y1: CY - Math.cos(a) * R0 * 0.7, x2: CX + Math.sin(a) * outer, y2: CY - Math.cos(a) * outer, stroke: "var(--fg)", "stroke-width": 1, opacity: 0.06 }));
     }
 
