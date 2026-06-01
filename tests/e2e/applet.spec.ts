@@ -3,9 +3,13 @@
  * file:// URL (the hub iframes it with no server), render its stage and controls,
  * and log no console errors. Mirrors the full-site interaction guard in miniature.
  */
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { test, expect, expectNoPageErrors } from "./fixtures";
 
-const APPLET_URL = "file:///Users/sarfas/Projects/Music/CommaPump/site/applet/index.html";
+// Resolve relative to the repo root so this works on any checkout (CI included),
+// not just one machine. `npm run build` writes the applet here before tests run.
+const APPLET_URL = pathToFileURL(path.resolve(process.cwd(), "site/applet/index.html")).href;
 
 async function waitForAppletStage(page: import("@playwright/test").Page): Promise<void> {
   await page.waitForFunction(() => {
