@@ -16,6 +16,8 @@ const METER_RANGE = 30; // cents shown each side of centre
 export class PianoRollViz implements Viz {
   readonly id = "pianoroll";
   readonly label = "Piano-roll + meter";
+  readonly howToRead =
+    "Left: the notes as they play, time → and pitch ↑. Right: a tuner needle for each sounding note — how far it sits from a piano (equal temperament). In just intonation the needles spread out; in ET they all sit at zero.";
   private host: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
@@ -127,39 +129,59 @@ export class PianoRollViz implements Viz {
 
   private drawMeter(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, h: number, state: VizState): void {
     const cx = x0 + w / 2;
-    ctx.strokeStyle = "rgba(243,241,234,0.12)";
-    ctx.strokeRect(x0 + 8, y0, w - 16, h);
-
-    // centre (in-tune) line
-    ctx.strokeStyle = ET;
-    ctx.globalAlpha = 0.6;
-    ctx.beginPath();
-    ctx.moveTo(cx, y0 + 6);
-    ctx.lineTo(cx, y0 + h - 6);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = MUTED;
-    ctx.font = "10px ui-sans-serif, system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("ET", cx, y0 + h - 4);
-
-    const active = activeNotes(state.result, state.beat);
     const halfW = (w - 28) / 2;
-    const barH = Math.min(22, (h - 30) / Math.max(1, active.length) - 6);
+    const headerH = 40;
+
+    // header: what the needle measures
+    ctx.fillStyle = MUTED;
+    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("tuner — cents vs a piano", cx, y0 + 13);
+
+    // scale ticks at ±10/20/30
+    ctx.strokeStyle = "rgba(243,241,234,0.10)";
+    ctx.fillStyle = MUTED;
+    ctx.font = "9px ui-sans-serif, system-ui, sans-serif";
+    for (let c = -30; c <= 30; c += 10) {
+      const tx = cx + (c / METER_RANGE) * halfW;
+      ctx.globalAlpha = c === 0 ? 0.5 : 0.25;
+      ctx.beginPath();
+      ctx.moveTo(tx, y0 + headerH - 8);
+      ctx.lineTo(tx, y0 + h - 6);
+      ctx.strokeStyle = c === 0 ? ET : "rgba(243,241,234,0.12)";
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      if (c !== 0) ctx.fillText(`${c > 0 ? "+" : ""}${c}`, tx, y0 + headerH - 12);
+    }
+    ctx.fillStyle = ET;
+    ctx.fillText("0", cx, y0 + headerH - 12);
+
+    // a needle per sounding note
+    const active = activeNotes(state.result, state.beat);
+    const slotH = Math.min(34, (h - headerH - 8) / Math.max(1, active.length));
+    const barH = Math.min(20, slotH - 12);
     ctx.textAlign = "left";
     active.forEach((n, i) => {
       const cents = noteCents(n, state.tuning);
-      const by = y0 + 14 + i * (barH + 8);
+      const by = y0 + headerH + i * slotH + 4;
       const len = (Math.max(-METER_RANGE, Math.min(METER_RANGE, cents)) / METER_RANGE) * halfW;
-      ctx.fillStyle = cents < -0.5 ? "#e08a6a" : cents > 0.5 ? "#88c891" : ET;
+      const colour = cents < -0.5 ? "#e08a6a" : cents > 0.5 ? "#88c891" : ET;
+      // bar from centre
+      ctx.fillStyle = colour;
+      ctx.globalAlpha = 0.85;
       const bx = len >= 0 ? cx : cx + len;
       roundRect(ctx, bx, by, Math.max(2, Math.abs(len)), barH, 3);
       ctx.fill();
+      ctx.globalAlpha = 1;
+      // label: note name + signed cents
       ctx.fillStyle = FG;
       ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(`${pitchName(n.midiNominal)} ${cents >= 0 ? "+" : ""}${cents.toFixed(1)}¢`, x0 + 14, by + barH / 2 + 4);
+      ctx.fillText(`${pitchName(n.midiNominal)}`, x0 + 14, by + barH / 2 + 4);
+      ctx.textAlign = "right";
+      ctx.fillStyle = colour;
+      ctx.fillText(`${cents >= 0 ? "+" : ""}${cents.toFixed(1)}¢`, x0 + w - 14, by + barH / 2 + 4);
+      ctx.textAlign = "left";
     });
-    ctx.textAlign = "left";
   }
 
   resize(): void {}

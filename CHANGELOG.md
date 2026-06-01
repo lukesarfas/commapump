@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Clearer visualizations.** Each view now carries a one-line "how to read this"
+  caption (full site and applet). The Tonnetz draws chords as triad triangles
+  tumbling across the lattice with labeled axes and a "same C, a comma away"
+  callout; the drift ribbon gained a cents scale, a "one piano key" reference,
+  and a live "the key is N¢ flat" readout; the spiral labels the start and
+  measures the gap in cents; the piano-roll meter became a labeled tuner with a
+  ±cents scale.
+
+### Fixed
+
+- **Stale-cache bug.** GCS entry documents (HTML, applet, manifest) had silently
+  inherited GCS's 1-hour default `Cache-Control` because the deploy glob missed
+  root-level files. Entry documents now ship `no-cache` (always revalidate via
+  ETag); only content-hashed `_astro` assets stay `immutable`. The deploy scripts
+  were corrected so it can't recur.
+
 ## [1.0.0] — 2026-06-01
 
 Production hardening. The explainer became shippable: crash-proof on every

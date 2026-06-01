@@ -41,6 +41,10 @@ function init(): void {
 
   // APG tablist: #stage is the single tabpanel (aria-controls), one tab is the
   // tab stop at a time (roving tabindex), Left/Right/Home/End move focus.
+  const howtoEl = byId("howto");
+  function setHowTo(id: string): void {
+    if (howtoEl) howtoEl.textContent = stage.list().find((v) => v.id === id)?.howToRead ?? "";
+  }
   function selectViz(id: string): void {
     stage.show(id);
     switchEl.querySelectorAll<HTMLButtonElement>(".tab").forEach((t) => {
@@ -49,6 +53,7 @@ function init(): void {
       t.tabIndex = on ? 0 : -1;
     });
     stageEl.setAttribute("aria-labelledby", `tab-${id}`);
+    setHowTo(id);
   }
   for (const v of stage.list()) {
     const b = document.createElement("button");
@@ -66,6 +71,7 @@ function init(): void {
     switchEl.append(b);
   }
   stageEl.setAttribute("aria-labelledby", `tab-${stage.currentId()}`);
+  setHowTo(stage.currentId());
   switchEl.addEventListener("keydown", (e) => {
     const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
     if (!keys.includes(e.key)) return;

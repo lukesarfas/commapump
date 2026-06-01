@@ -11,6 +11,8 @@ export interface VizState {
 export interface Viz {
   readonly id: string;
   readonly label: string;
+  /** One or two plain sentences telling the reader how to read this view. */
+  readonly howToRead: string;
   mount(host: HTMLElement): void;
   draw(state: VizState): void;
   resize(): void;

@@ -54,6 +54,22 @@ test.describe("interaction", () => {
     expectNoPageErrors(errors);
   });
 
+  test("each visualization explains how to read it, and the caption changes per view", async ({ page }) => {
+    const howto = page.locator("#lab-howto");
+    const tabs = page.getByRole("tab");
+    const seen = new Set<string>();
+    const count = await tabs.count();
+    for (let i = 0; i < count; i++) {
+      await tabs.nth(i).click();
+      await expect(howto).toBeVisible();
+      const text = (await howto.textContent())?.trim() ?? "";
+      expect(text.length, `viz #${i} should have a how-to caption`).toBeGreaterThan(20);
+      seen.add(text);
+    }
+    // every view has its own explanation
+    expect(seen.size).toBe(count);
+  });
+
   test("picking a playground example marks it pressed and keeps the stage drawn", async ({
     page,
     errors,

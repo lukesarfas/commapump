@@ -32,6 +32,31 @@ export function homes(result: ScheduleResult): ScheduledNote[] {
   return result.notes.filter((n) => n.isCycleTonic).sort((a, b) => a.startBeat - b.startBeat);
 }
 
+export interface Chord {
+  chordIndex: number;
+  degree: string;
+  cycle: number;
+  startBeat: number;
+  notes: ScheduledNote[];
+}
+
+/** Group the timeline back into chords, in playing order, root first. */
+export function chords(result: ScheduleResult): Chord[] {
+  const map = new Map<number, ScheduledNote[]>();
+  for (const n of result.notes) {
+    const arr = map.get(n.chordIndex);
+    if (arr) arr.push(n);
+    else map.set(n.chordIndex, [n]);
+  }
+  return [...map.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([chordIndex, notes]) => {
+      notes.sort((a, b) => a.voiceId - b.voiceId);
+      const root = notes[0];
+      return { chordIndex, degree: root.degree, cycle: root.cycle, startBeat: root.startBeat, notes };
+    });
+}
+
 /**
  * Temper out the syntonic comma on the Tonnetz: points differing by the comma
  * lattice vector (4, −1) collapse to one node — so the ET walk returns home.

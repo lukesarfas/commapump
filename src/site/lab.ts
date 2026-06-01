@@ -127,6 +127,11 @@ export function initLab(): void {
     });
     // Point the panel at the initially-selected tab without re-announcing.
     $(STAGE_ID)?.setAttribute("aria-labelledby", `lab-tab-${stage.currentId()}`);
+    setHowTo(stage.currentId());
+  }
+  function setHowTo(id: string): void {
+    const howto = $("lab-howto");
+    if (howto) howto.textContent = stage.list().find((v) => v.id === id)?.howToRead ?? "";
   }
   function selectViz(id: string, opts: { announce?: boolean } = {}): void {
     stage.show(id);
@@ -137,6 +142,7 @@ export function initLab(): void {
     });
     const stageEl2 = $(STAGE_ID);
     if (stageEl2) stageEl2.setAttribute("aria-labelledby", `lab-tab-${id}`);
+    setHowTo(id);
     if (opts.announce) {
       const label = stage.list().find((v) => v.id === id)?.label ?? id;
       announce(`${label} visualization.`);
