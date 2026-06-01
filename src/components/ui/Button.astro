@@ -1,0 +1,53 @@
+---
+// Vendored from @sarfas/ui.
+interface Props {
+  href?: string;
+  variant?: "primary" | "ghost";
+  class?: string;
+  external?: boolean;
+}
+const { href, variant = "ghost", class: className, external = false } = Astro.props;
+const Tag = href ? "a" : "button";
+const rel = external ? "noopener noreferrer" : undefined;
+const target = external ? "_blank" : undefined;
+---
+
+<Tag href={href} rel={rel} target={target} class:list={["sarfas-btn", `sarfas-btn-${variant}`, className]}>
+  <slot />
+</Tag>
+
+<style>
+  .sarfas-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--fg);
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      transform 160ms var(--ease),
+      background 160ms var(--ease),
+      border-color 160ms var(--ease);
+  }
+  .sarfas-btn:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .sarfas-btn-primary {
+    background: var(--grad-1);
+    color: #0d0f14;
+    border-color: transparent;
+    font-weight: 600;
+  }
+  .sarfas-btn-primary:hover {
+    filter: brightness(1.05);
+    color: #0d0f14;
+  }
+</style>

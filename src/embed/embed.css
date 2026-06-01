@@ -1,0 +1,95 @@
+/* Self-contained applet styles. No external fonts (system stack) so first paint
+   is a single document. Sized for a 16:10 viewport with no scroll. */
+:root {
+  --bg: #16151b;
+  --bg-1: #1d1c24;
+  --fg: #f3f1ea;
+  --muted: #9b958a;
+  --signature: #f0b54a;
+  --signature-warm: #e0875a;
+  --et: #6fc3d6;
+  --drift-down: #e08a6a;
+  --drift-up: #88c891;
+  --border: rgba(243, 241, 234, 0.1);
+  --card: rgba(243, 241, 234, 0.04);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  background: radial-gradient(900px 500px at 50% -160px, rgba(240, 181, 74, 0.12), transparent 60%), var(--bg);
+  color: var(--fg);
+  overflow: hidden;
+}
+#app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(10px, 2.5vmin, 22px);
+  gap: clamp(8px, 1.6vmin, 16px);
+}
+.switch {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tab {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 8px;
+  padding: 0.32rem 0.6rem;
+  font-size: clamp(0.7rem, 1.7vmin, 0.82rem);
+  cursor: pointer;
+  min-height: 34px;
+}
+.tab[aria-selected="true"] {
+  color: var(--fg);
+  border-color: var(--signature);
+  background: var(--card);
+}
+#stage {
+  flex: 1;
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  overflow: hidden;
+}
+#stage svg text { font-family: ui-sans-serif, system-ui, sans-serif; }
+#stage svg { width: 100%; height: 100%; display: block; }
+#bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#readout {
+  font-variant-numeric: tabular-nums;
+  color: var(--signature);
+  font-weight: 600;
+  font-size: clamp(0.85rem, 2.2vmin, 1.05rem);
+  margin-right: auto;
+}
+.btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  border-radius: 10px;
+  padding: 0.5rem 0.85rem;
+  font-size: clamp(0.8rem, 2vmin, 0.95rem);
+  font-weight: 500;
+  cursor: pointer;
+  min-height: 40px;
+}
+.btn:hover { border-color: var(--signature); }
+.btn.primary {
+  background: linear-gradient(135deg, var(--signature), var(--signature-warm));
+  color: #1a140a;
+  border-color: transparent;
+  font-weight: 600;
+}
+.btn[aria-pressed="true"] { border-color: var(--et); color: var(--et); }

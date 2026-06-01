@@ -1,0 +1,45 @@
+---
+import Container from "~/components/ui/Container.astro";
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <Container class="footer-inner">
+    <div>
+      <span>© {year} Luke Sarfas</span>
+      <span class="dot">·</span>
+      <span>Built with the Web Audio API</span>
+    </div>
+    <div>
+      <a href="https://luke.sarfas.com">luke.sarfas.com</a>
+    </div>
+  </Container>
+</footer>
+
+<style>
+  .footer {
+    margin-top: 5rem;
+    padding: 1.5rem 0 2.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .footer :global(.footer-inner) {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .footer a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 160ms var(--ease);
+  }
+  .footer a:hover {
+    color: var(--fg);
+  }
+  .dot {
+    margin: 0 0.4rem;
+    opacity: 0.5;
+  }
+</style>

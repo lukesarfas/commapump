@@ -1,0 +1,33 @@
+{
+  "name": "commapump",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hear just-intonation music drift out of tune — an interactive explainer of the syntonic comma pump.",
+  "scripts": {
+    "dev": "astro dev --port 4330",
+    "start": "astro dev --port 4330",
+    "build": "astro build && node scripts/build-applet.mjs && node scripts/make-manifest.mjs && node scripts/make-preview.mjs && node scripts/size-check.mjs",
+    "build:applet:only": "node scripts/build-applet.mjs && node scripts/size-check.mjs",
+    "build:site": "astro build",
+    "build:applet": "node scripts/build-applet.mjs && node scripts/size-check.mjs",
+    "preview": "astro preview --port 4330",
+    "astro": "astro",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "astro check && tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "abcjs": "^6.4.0",
+    "astro": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

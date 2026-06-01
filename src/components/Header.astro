@@ -1,0 +1,89 @@
+---
+import Container from "~/components/ui/Container.astro";
+---
+
+<header class="header">
+  <Container class="header-inner">
+    <a href="/" class="brand" aria-label="CommaPump home">
+      <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true">
+        <!-- a staircase sinking left-to-right: the comma drift, in miniature -->
+        <path
+          d="M4 9 H11 V15 H18 V21 H25 V27"
+          stroke="var(--signature)"
+          stroke-width="2.4"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <circle cx="4" cy="9" r="2" fill="var(--signature)" />
+        <circle cx="25" cy="27" r="2" fill="var(--signature-warm)" />
+      </svg>
+      <span>CommaPump</span>
+    </a>
+    <nav class="nav">
+      <a href="/#story">The story</a>
+      <a href="/#playground">Playground</a>
+      <a href="https://luke.sarfas.com" class="cta" rel="noopener">luke.sarfas.com</a>
+    </nav>
+  </Container>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    background: color-mix(in oklab, var(--bg) 62%, transparent);
+    border-bottom: 1px solid var(--border);
+  }
+  .header :global(.header-inner) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--fg);
+    font-size: 1rem;
+    text-decoration: none;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .nav a {
+    color: var(--muted);
+    padding: 0.4rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: color 160ms var(--ease), background 160ms var(--ease);
+  }
+  .nav a:hover {
+    color: var(--fg);
+    background: var(--card);
+  }
+  .nav a.cta {
+    color: var(--fg);
+    border: 1px solid var(--border-strong);
+    background: var(--card);
+    margin-left: 0.25rem;
+  }
+  .nav a.cta:hover {
+    border-color: var(--accent);
+  }
+  @media (max-width: 560px) {
+    .nav a {
+      padding: 0.4rem 0.5rem;
+      font-size: 0.82rem;
+    }
+  }
+</style>

@@ -1,0 +1,31 @@
+---
+import "~/styles/global.css";
+import MetaTags from "~/components/ui/MetaTags.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  path?: string;
+}
+const {
+  title = "CommaPump — hear just-intonation music drift out of tune",
+  description = "An interactive explainer of the syntonic comma pump: play a chord loop that's perfectly in tune, and watch the key sink by a comma every cycle.",
+  path = "/",
+} = Astro.props;
+const url = new URL(path, Astro.site ?? "https://commapump.sarfas.com").toString();
+const ogImage = new URL("/preview.png", Astro.site ?? "https://commapump.sarfas.com").toString();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a1814" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <MetaTags title={title} description={description} url={url} image={ogImage} imageAlt="The comma pump visualized on a just-intonation lattice." />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,309 @@
+---
+import Base from "~/layouts/Base.astro";
+import Header from "~/components/Header.astro";
+import Footer from "~/components/Footer.astro";
+import Container from "~/components/ui/Container.astro";
+import Button from "~/components/ui/Button.astro";
+import { schedule, PUMP_IVIIVI, SYNTONIC_COMMA_CENTS } from "~/core/index";
+import { SCENES } from "~/content/beats";
+import { GLOSSARY } from "~/content/glossary";
+
+// Hero drift staircase, rendered at build time from the verified engine.
+const result = schedule(PUMP_IVIIVI, { cycles: 4 });
+const homes = result.notes.filter((n) => n.isCycleTonic).map((n) => n.centsVsET);
+const W = 760;
+const H = 300;
+const padX = 64;
+const padTop = 28;
+const padBottom = 40;
+const minC = Math.min(0, ...homes) - 8;
+const maxC = 8;
+const yOf = (c: number) => padTop + ((maxC - c) / (maxC - minC)) * (H - padTop - padBottom);
+const stepW = (W - padX * 2) / Math.max(1, homes.length - 1);
+const points = homes.map((c, i) => ({ x: padX + i * stepW, y: yOf(c), c, i }));
+const path = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+
+const PUMP_ABC = `X:1\nM:4/4\nL:1/1\nK:C\n"C" [C,EG] | "Am" [C,EA] | "Dm" [D,FA] | "G" [G,Bd] | "C" [C,EG] |]`;
+const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
+---
+
+<Base>
+  <Header />
+  <main>
+    <section class="hero">
+      <Container>
+        <p class="eyebrow">The comma pump · syntonic comma drift</p>
+        <h1>
+          Play a chord loop that's <em>perfectly</em> in tune,<br />
+          and the key <span class="text-gradient">sinks</span>.
+        </h1>
+        <p class="prose lede">
+          In pure just intonation, the progression <strong>I–vi–ii–V–I</strong> — every fifth and
+          third a beat-free whole-number ratio — doesn't come home. Each lap, the tonic drops by a
+          <strong>syntonic comma</strong> ({SYNTONIC_COMMA_CENTS.toFixed(1)}¢, about a fifth of a
+          semitone). Nothing is out of tune; tuning itself just doesn't add up.
+        </p>
+
+        <figure class="ribbon">
+          <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Each loop of the progression sinks the tonic by one syntonic comma.">
+            <line x1={padX} x2={W - padX} y1={yOf(0)} y2={yOf(0)} class="zero" />
+            <text x={padX} y={yOf(0) - 8} class="zero-label">in tune · 0¢</text>
+            <path d={path} class="stair" />
+            {points.map((p) => (
+              <g>
+                <circle cx={p.x} cy={p.y} r="5" class="node" />
+                <text x={p.x} y={p.y + 22} class="cents">{p.c.toFixed(1)}¢</text>
+                <text x={p.x} y={p.y - 12} class="loop">{p.i === 0 ? "start" : `loop ${p.i}`}</text>
+              </g>
+            ))}
+          </svg>
+          <figcaption>Four loops of I–vi–ii–V–I in just intonation — the tonic “C” after each return.</figcaption>
+        </figure>
+
+        <div class="cta">
+          <Button href="#story" variant="primary">Walk through it →</Button>
+          <Button href="#playground">Skip to the playground</Button>
+        </div>
+      </Container>
+    </section>
+
+    <section id="story" class="lab-section">
+      <Container>
+        <div class="lab-layout">
+          <div class="lab-figure">
+            <div id="lab-tabs" class="switch" role="tablist" aria-label="Visualization"></div>
+            <div id="lab-stage" class="stage"></div>
+            <div class="lab-bar">
+              <button id="lab-play" type="button" class="btn primary">▶ Play</button>
+              <div id="lab-readout" class="readout" aria-live="off"></div>
+              <button id="lab-mode" type="button" class="btn" aria-pressed="false">Just intonation</button>
+            </div>
+            <p id="lab-live" class="sr-only" aria-live="polite"></p>
+          </div>
+
+          <div class="lab-steps">
+            {SCENES.map((scene) => (
+              <article class="step" data-scene={scene.id}>
+                <h2>{scene.title}</h2>
+                <Fragment set:html={scene.body} />
+              </article>
+            ))}
+
+            <article class="step playground" id="playground" data-scene="playground-anchor">
+              <h2>Your turn</h2>
+              <p>Pick an example, switch tuning, and let the drift accumulate. The lab on the left is live.</p>
+              <div id="lab-examples" class="chips" aria-label="Examples"></div>
+              <div class="controls">
+                <label>
+                  Loops <input id="lab-cycles" type="range" min="1" max="6" value="4" />
+                  <span id="lab-cycles-out" class="num">4</span>
+                </label>
+                <label>
+                  Tempo <input id="lab-tempo" type="range" min="50" max="140" value="90" />
+                </label>
+              </div>
+              <p class="hint">Tip: play the pump in <strong>just intonation</strong>, then hit the tuning button to hear it stop drifting in equal temperament.</p>
+            </article>
+          </div>
+        </div>
+      </Container>
+    </section>
+
+    <section class="section">
+      <Container>
+        <h2>On the page</h2>
+        <p class="prose muted">The two worked examples, engraved. Tuning lives in the ratios, not the notation — these are the notes; the lab decides how to tune them.</p>
+        <div class="scores">
+          <figure>
+            <figcaption>The pump — I–vi–ii–V–I</figcaption>
+            <div class="score" data-abc={PUMP_ABC}></div>
+          </figure>
+          <figure>
+            <figcaption>The fifths chain — C–G–D–A–E–C</figcaption>
+            <div class="score" data-abc={FIFTHS_ABC}></div>
+          </figure>
+        </div>
+      </Container>
+    </section>
+
+    <section class="section">
+      <Container>
+        <h2>Glossary</h2>
+        <dl class="glossary">
+          {GLOSSARY.map((g) => (
+            <div>
+              <dt>{g.term}</dt>
+              <dd>{g.def}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="prose muted sources">
+          Sources: Wikipedia (Syntonic comma), FIU Just Intonation (Pitch Drift), John Baez’s Azimuth,
+          tonalsoft, and Ross Duffin, “Just Intonation in Renaissance Theory and Practice” (MTO 12.3, 2006).
+        </p>
+      </Container>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<script>
+  import "~/site/lab.ts";
+  import "~/site/notation.ts";
+</script>
+
+<style>
+  .hero {
+    padding: clamp(2.5rem, 7vw, 5.5rem) 0 2rem;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin: 0 0 1rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.6rem);
+    margin: 0 0 1.25rem;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--fg-soft);
+  }
+  .lede {
+    font-size: clamp(1rem, 2.2vw, 1.2rem);
+    color: var(--fg-soft);
+  }
+  .ribbon {
+    margin: 2.5rem 0 2rem;
+    max-width: 820px;
+  }
+  .ribbon svg {
+    width: 100%;
+    height: auto;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .ribbon figcaption {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 0.6rem;
+  }
+  .zero { stroke: var(--et); stroke-width: 1; stroke-dasharray: 4 5; opacity: 0.6; }
+  .zero-label { fill: var(--et); font-size: 12px; opacity: 0.85; }
+  .stair { fill: none; stroke: var(--signature); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  .node { fill: var(--signature); }
+  .cents { fill: var(--fg); font-size: 12px; text-anchor: middle; font-variant-numeric: tabular-nums; }
+  .loop { fill: var(--muted); font-size: 11px; text-anchor: middle; }
+  .cta { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+  /* ---- the lab (scroll-story + playground) ---- */
+  .lab-section { padding: 2rem 0 3rem; }
+  .lab-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .lab-figure {
+    position: sticky;
+    top: 64px;
+    z-index: 1;
+    background: var(--bg-1);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem;
+    box-shadow: var(--shadow);
+  }
+  .stage {
+    aspect-ratio: 16 / 10;
+    width: 100%;
+    background: var(--bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .stage svg { width: 100%; height: 100%; display: block; }
+  .switch { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 0.6rem; }
+  .lab-bar { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.6rem; flex-wrap: wrap; }
+  .readout { color: var(--signature); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 0.9rem; margin-right: auto; }
+
+  .lab-steps { display: flex; flex-direction: column; }
+  .step {
+    min-height: 64vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1rem 0;
+    max-width: 56ch;
+  }
+  .step h2 { font-size: clamp(1.4rem, 3.4vw, 2rem); margin-bottom: 0.75rem; }
+  .step :global(p) { color: var(--fg-soft); }
+  .step.playground { min-height: auto; padding: 2rem 0 3rem; }
+
+  .chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+  .controls { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; align-items: center; }
+  .controls label { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--muted); font-size: 0.9rem; }
+  .num { color: var(--fg); font-variant-numeric: tabular-nums; }
+  .hint { font-size: 0.9rem; color: var(--muted); }
+
+  /* ---- buttons used by lab.ts ---- */
+  .btn {
+    appearance: none;
+    border: 1px solid var(--border-strong);
+    background: var(--card);
+    color: var(--fg);
+    border-radius: 10px;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--grad-1); color: #1a140a; border-color: transparent; font-weight: 600; }
+  .btn[aria-pressed="true"] { border-color: var(--et); color: var(--et); }
+  .tab {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.82rem;
+    cursor: pointer;
+    min-height: 34px;
+  }
+  .tab[aria-selected="true"] { color: var(--fg); border-color: var(--signature); background: var(--card); }
+  .chip {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--fg-soft);
+    border-radius: 999px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--signature); color: var(--fg); }
+
+  .section { padding: 3rem 0; border-top: 1px solid var(--border); }
+  .section h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 1rem; }
+  .muted { color: var(--muted); }
+  .scores { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
+  .score { background: #faf8f2; border-radius: var(--radius); padding: 0.5rem 1rem; overflow-x: auto; }
+  figure { margin: 0; }
+  figcaption { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+
+  .glossary { display: grid; gap: 1rem; max-width: var(--maxw-prose); }
+  .glossary dt { font-weight: 600; color: var(--fg); }
+  .glossary dd { margin: 0.15rem 0 0; color: var(--muted); }
+  .sources { margin-top: 2rem; font-size: 0.85rem; }
+
+  @media (min-width: 900px) {
+    .lab-layout { grid-template-columns: 1.05fr 0.95fr; }
+    .lab-figure { order: 2; align-self: start; }
+    .lab-steps { order: 1; }
+    .scores { grid-template-columns: 1fr 1fr; }
+  }
+</style>
