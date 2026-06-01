@@ -86,7 +86,8 @@ no secrets. Still:
 - **No inline event handlers**; Astro emits hashed external scripts. The applet's
   single inlined script is pinned by hash.
 - **Dependency hygiene.** `npm audit` clean (or documented, with no exploitable
-  path for a static build-time-only dep). Renovate/Dependabot config for updates.
+  path for a static build-time-only dep). Updates reviewed manually (`npm
+  outdated`/`npm audit`) — no automated update PRs on this solo project.
 - **Supply chain.** Lockfile committed; CI uses `npm ci`.
 - **No secrets in repo.** Deploy uses the operator's `gcloud`/Workload Identity.
 - **Disclosure.** `SECURITY.md` with a contact and policy.
@@ -131,8 +132,8 @@ The only meaningful cost is **GCS egress**; storage is a few hundred KB.
 Parallel agents own non-overlapping paths so the merged tree is coherent without
 worktree merges:
 - **Foundation** (first, sequential): `package.json`, lockfile, `*.config.*`,
-  `tsconfig.json`, `.github/workflows/**`, `playwright.config.ts`, `.editorconfig`,
-  deploy scripts (Cache-Control), Dependabot. Installs deps; leaves the tree
+  `tsconfig.json`, `.github/workflows/ci.yml`, `playwright.config.ts`, `.editorconfig`,
+  deploy scripts (Cache-Control). Installs deps; leaves the tree
   building green.
 - **UI-app**: `src/components/**`, `src/pages/**`, `src/layouts/**`,
   `src/styles/**` — visible UI, a11y, responsive, CSP meta in layouts, crash-proof

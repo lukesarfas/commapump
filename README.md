@@ -58,9 +58,9 @@ site/preview.png          # 1600×900 hero
 site/applet/index.html    # self-contained embeddable demo, ≤200 KB gzip (size-checked)
 ```
 
-`.github/workflows/publish-applet.yml` rsyncs `site/` to
-`gs://luke-sarfas-applets/commapump/` and pings the hub to rebuild. The hub
-registers it with one line in `apps/luke.sarfas.com/src/data/projects.json`:
+Publishing is done manually with `npm run deploy:applet` (see Deploy below) from
+a machine authenticated to GCS — there is no publish CI for this solo project.
+The hub registers it with one line in `apps/luke.sarfas.com/src/data/projects.json`:
 
 ```json
 { "slug": "commapump", "manifestUrl": "https://storage.googleapis.com/luke-sarfas-applets/commapump/manifest.json" }

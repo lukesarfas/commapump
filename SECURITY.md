@@ -33,7 +33,8 @@ What an attacker could plausibly target, and why each is low-risk here:
   Content-Security-Policy is designed to contain.
 - **Supply chain.** A compromised dependency could inject code at build time.
   This is the most realistic threat for a static site, and the bulk of our
-  controls (CSP, lockfile, `npm ci`, Dependabot, no inline handlers) target it.
+  controls (CSP, committed lockfile, `npm ci`, manual dependency review, no
+  inline handlers) target it.
 - **Embedding / clickjacking.** The applet is meant to be iframed by the hub
   (luke.sarfas.com). Framing controls are owned by the hub — see below.
 - **Cost / availability abuse.** A traffic spike cannot trigger runaway cost
@@ -118,9 +119,9 @@ will not suffice.
 - **Lockfile committed.** `package-lock.json` is in the repo; CI installs with
   **`npm ci`** (exact, reproducible, lockfile-respecting) — never `npm install`
   in CI.
-- **Dependabot.** `.github/dependabot.yml` opens weekly grouped PRs for npm
-  dependencies and GitHub Actions pins, keeping us current on security patches
-  with low PR noise.
+- **Manual dependency review.** Dependencies are reviewed and bumped by hand
+  (`npm outdated` / `npm audit`) for this solo project; automated update PRs were
+  removed to cut workflow noise. The minimal footprint below keeps this tractable.
 - **Minimal dependency footprint.** Runtime deps are `astro` and `abcjs`; the
   build uses `esbuild`, and tests use Vitest / Playwright / axe-core. The tuning
   engine itself is dependency-free. The applet ships **zero** third-party runtime

@@ -68,12 +68,13 @@ It runs:
    [COST.md](./COST.md#cache-control-scheme) for why, and for what the 5-minute
    TTL means for redeploy visibility.
 
-In CI this is done by `.github/workflows/publish-applet.yml`, which fires on any
-push to `main` that touches `site/`. It builds, authenticates with the
-`APPLETS_PUBLISHER_KEY` service-account secret, validates that
-`manifest.json` / `preview.png` / `applet/index.html` exist and that the manifest
-has the required keys, rsyncs to the bucket, and (if `WEBSITE_DISPATCH_TOKEN` is
-set) triggers a hub rebuild via a `repository_dispatch`.
+Publishing is **manual** for this solo project: run `npm run deploy:applet` from
+a machine authenticated to GCS (`gcloud auth login`). The script builds,
+rsyncs `site/` to the bucket, and sets `Cache-Control`. There is no publish CI
+(an earlier `publish-applet.yml` was removed — it needed a service-account secret
+that was never provisioned and only added failing-run noise). After publishing,
+trigger a hub rebuild if needed (`gh workflow run "Build & Deploy" --repo
+lukesarfas/luke.sarfas.com`) so the card picks up manifest changes.
 
 ## `npm run deploy:site`
 

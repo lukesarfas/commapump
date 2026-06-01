@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   measures the gap in cents; the piano-roll meter became a labeled tuner with a
   ±cents scale.
 
+### Removed
+
+- **Publish + Dependabot workflows.** Dropped `.github/workflows/publish-applet.yml`
+  (needed a GCS service-account secret that was never provisioned, so every run
+  failed) and `.github/dependabot.yml` (auto-update PR churn). This is a solo
+  project: deploys are manual (`npm run deploy:*`) and dependencies are reviewed
+  by hand. `ci.yml` (build + unit + E2E) stays.
+
 ### Fixed
 
 - **Stale-cache bug.** GCS entry documents (HTML, applet, manifest) had silently
