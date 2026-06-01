@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Continuous-pitch roll.** The piano-roll was rebuilt so the vertical axis is
+  real pitch in cents, not snapped semitone rows (the standard way microtonal
+  pitch is shown — cf. XenRoll, Reaper custom rolls). Notes sit at their true
+  height off a faint equal-tempered grid; a tonic trail draws the drift staircase
+  across the whole timeline (labeled with the cumulative cents, e.g. "home drifts
+  86¢ flat"); per-note labels give exact deviations; and switching to ET glides
+  every note onto the grid — the comma tempered away on screen.
+
 - **Clearer visualizations.** Each view now carries a one-line "how to read this"
   caption (full site and applet). The Tonnetz draws chords as triad triangles
   tumbling across the lattice with labeled axes and a "same C, a comma away"

@@ -33,7 +33,7 @@ test.describe("full-site launch", () => {
   test("the visualization tablist renders all four tabs", async ({ page }) => {
     const tabs = page.getByRole("tab");
     await expect(tabs).toHaveCount(4);
-    for (const label of ["Lattice walk", "Drift ribbon", "Circle of fifths", "Piano-roll + meter"]) {
+    for (const label of ["Lattice walk", "Drift ribbon", "Circle of fifths", "Pitch roll"]) {
       await expect(page.getByRole("tab", { name: label })).toBeVisible();
     }
   });

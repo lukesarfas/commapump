@@ -1,26 +1,37 @@
 /**
- * Piano-roll + live cents meter (Canvas). The notes scroll under a playhead; the
- * meter on the right shows, in real time, how far each sounding note sits from
- * equal temperament — flat-lining at zero in ET, spread out in just intonation.
+ * Continuous-pitch roll (Canvas). Unlike a normal MIDI piano-roll, notes are NOT
+ * snapped to semitone rows — the vertical axis is pitch in cents, so each note
+ * sits at its true height. The faint horizontal lines are a piano's keys (equal
+ * temperament); in just intonation the notes sit visibly *off* them (a pure
+ * third ~14¢ low), and the tonic sinks further below its line every loop. Toggle
+ * to equal temperament and every note glides onto the grid — the comma, tempered
+ * away before your eyes.
  */
 
 import type { Viz, VizState } from "./types";
-import { activeNotes, noteCents, pitchName } from "./util";
+import { activeNotes, homes, pitchName } from "./util";
 
 const PALETTE = ["#f0b54a", "#e0875a", "#6fc3d6", "#c9a25e", "#d98f6a"];
 const FG = "#f3f1ea";
 const MUTED = "#9b958a";
 const ET = "#6fc3d6";
-const METER_RANGE = 30; // cents shown each side of centre
+const FLAT = "#e08a6a";
+const PAD_L = 56;
+const PAD_R = 18;
+const PAD_TOP = 20;
+const PAD_BOTTOM = 26;
+const NOTE_H = 9;
 
 export class PianoRollViz implements Viz {
   readonly id = "pianoroll";
-  readonly label = "Piano-roll + meter";
+  readonly label = "Pitch roll";
   readonly howToRead =
-    "Left: the notes as they play, time → and pitch ↑. Right: a tuner needle for each sounding note — how far it sits from a piano (equal temperament). In just intonation the needles spread out; in ET they all sit at zero.";
+    "The vertical axis is real pitch, not piano keys. Faint lines are a piano’s notes (equal temperament); in just intonation each note sits a little off its line, and “home” sinks lower every loop. Switch to ET and watch every note glide onto the grid.";
   private host: HTMLElement | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private ctx: CanvasRenderingContext2D | null = null;
+  /** eased 0 (just intonation) → 1 (equal temperament) for the glide animation */
+  private tuneMix = 0;
 
   mount(host: HTMLElement): void {
     this.host = host;
@@ -28,17 +39,12 @@ export class PianoRollViz implements Viz {
     this.canvas.style.width = "100%";
     this.canvas.style.height = "100%";
     this.canvas.style.display = "block";
-    // Parity with the SVG vizzes (role="img" + aria-label) so the active tabpanel
-    // never holds an unlabeled graphic (SPEC §4.3).
     this.canvas.setAttribute("role", "img");
     this.canvas.setAttribute(
       "aria-label",
-      "Piano-roll with a live cents meter: each sounding note plotted against time, its distance from equal temperament read out on the right.",
+      "Continuous-pitch roll: notes plotted at their true pitch in cents against a faint equal-tempered grid; in just intonation they sit off the grid and the tonic drifts downward.",
     );
     this.ctx = this.canvas.getContext("2d");
-    // On a host without Canvas 2D (capabilities().canvas2d === false) getContext
-    // returns null; show a short message rather than an empty canvas so the stage
-    // never silently blanks — the other (SVG) tabs still work. SPEC §4.2.
     if (!this.ctx) {
       host.replaceChildren(fallback());
       return;
@@ -65,123 +71,80 @@ export class PianoRollViz implements Viz {
     const ctx = this.ctx;
     ctx.clearRect(0, 0, w, h);
 
-    const meterW = Math.max(150, w * 0.26);
-    const rollW = w - meterW;
-    const padL = 44;
-    const padTop = 16;
-    const padBottom = 24;
-    const plotW = rollW - padL - 12;
-    const plotH = h - padTop - padBottom;
+    // ease the JI↔ET glide (snap when reduced motion is requested)
+    const target = state.tuning === "ET" ? 1 : 0;
+    this.tuneMix = state.reducedMotion ? target : this.tuneMix + (target - this.tuneMix) * 0.16;
+    if (Math.abs(this.tuneMix - target) < 0.002) this.tuneMix = target;
+    const mix = this.tuneMix;
 
     const notes = state.result.notes;
     const total = state.result.totalBeats || 1;
-    const midis = notes.map((n) => n.midiNominal);
-    const minM = Math.min(...midis) - 1;
-    const maxM = Math.max(...midis) + 1;
-    const rows = Math.max(1, maxM - minM);
-    const x = (beat: number) => padL + (beat / total) * plotW;
-    const y = (m: number) => padTop + ((maxM - m) / rows) * plotH;
-    const rowH = plotH / rows;
+    const plotW = w - PAD_L - PAD_R;
+    const plotH = h - PAD_TOP - PAD_BOTTOM;
 
-    // row guides + names
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    // pitch range from the just-intonation positions (the widest extent), so the
+    // view doesn't jump when tuning toggles.
+    const absJI = notes.map((n) => n.midiNominal * 100 + n.centsVsET);
+    const minC = Math.min(...absJI) - 70;
+    const maxC = Math.max(...absJI) + 70;
+    const yOf = (cents: number) => PAD_TOP + ((maxC - cents) / (maxC - minC)) * plotH;
+    const xOf = (beat: number) => PAD_L + (beat / total) * plotW;
+    const noteCents = (n: (typeof notes)[number]) => n.midiNominal * 100 + n.centsVsET * (1 - mix);
+
+    // equal-tempered grid: a faint line + name at every semitone
     ctx.textBaseline = "middle";
-    for (let m = Math.ceil(minM); m <= Math.floor(maxM); m++) {
-      const yy = y(m);
-      ctx.strokeStyle = "rgba(243,241,234,0.05)";
+    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
+    for (let s = Math.ceil(minC / 100); s <= Math.floor(maxC / 100); s++) {
+      const yy = yOf(s * 100);
+      const isC = ((s % 12) + 12) % 12 === 0;
+      ctx.strokeStyle = isC ? "rgba(111,195,214,0.18)" : "rgba(243,241,234,0.07)";
       ctx.beginPath();
-      ctx.moveTo(padL, yy);
-      ctx.lineTo(padL + plotW, yy);
+      ctx.moveTo(PAD_L, yy);
+      ctx.lineTo(PAD_L + plotW, yy);
       ctx.stroke();
-      if (m % 12 === 0 || [0, 2, 4, 5, 7, 9, 11].includes(((m % 12) + 12) % 12)) {
-        ctx.fillStyle = MUTED;
-        ctx.fillText(pitchName(m), 8, yy);
-      }
+      ctx.fillStyle = isC ? ET : MUTED;
+      ctx.fillText(pitchName(s), 10, yy);
     }
 
-    // notes
+    // the tonic trail: connect every "home" arrival so the drift staircase is
+    // visible across the whole timeline, even when paused.
+    drawTonicTrail(ctx, state, mix, yOf, xOf, PAD_L, plotW);
+
+    // notes at their true pitch
     const active = new Set(activeNotes(state.result, state.beat).map((n) => `${n.chordIndex}:${n.voiceId}`));
     for (const n of notes) {
-      const nx = x(n.startBeat);
+      const nx = xOf(n.startBeat);
       const nw = Math.max(3, (n.durBeats / total) * plotW - 2);
-      const ny = y(n.midiNominal) - rowH * 0.36;
-      const nh = rowH * 0.72;
+      const ny = yOf(noteCents(n)) - NOTE_H / 2;
       const on = active.has(`${n.chordIndex}:${n.voiceId}`);
       ctx.fillStyle = PALETTE[n.voiceId % PALETTE.length];
-      ctx.globalAlpha = on ? 1 : 0.4;
-      roundRect(ctx, nx, ny, nw, nh, 3);
+      ctx.globalAlpha = on ? 1 : 0.42;
+      roundRect(ctx, nx, ny, nw, NOTE_H, 3);
       ctx.fill();
     }
     ctx.globalAlpha = 1;
 
     // playhead
-    const px = x(state.beat);
+    const px = xOf(state.beat);
     ctx.strokeStyle = FG;
-    ctx.globalAlpha = 0.8;
+    ctx.globalAlpha = 0.85;
     ctx.beginPath();
-    ctx.moveTo(px, padTop - 6);
-    ctx.lineTo(px, padTop + plotH + 6);
+    ctx.moveTo(px, PAD_TOP - 6);
+    ctx.lineTo(px, PAD_TOP + plotH + 6);
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    this.drawMeter(ctx, rollW, padTop, meterW, h - padTop - padBottom, state);
-  }
-
-  private drawMeter(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, h: number, state: VizState): void {
-    const cx = x0 + w / 2;
-    const halfW = (w - 28) / 2;
-    const headerH = 40;
-
-    // header: what the needle measures
-    ctx.fillStyle = MUTED;
+    // label the sounding notes with their distance from the grid (the cents)
     ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("tuner — cents vs a piano", cx, y0 + 13);
-
-    // scale ticks at ±10/20/30
-    ctx.strokeStyle = "rgba(243,241,234,0.10)";
-    ctx.fillStyle = MUTED;
-    ctx.font = "9px ui-sans-serif, system-ui, sans-serif";
-    for (let c = -30; c <= 30; c += 10) {
-      const tx = cx + (c / METER_RANGE) * halfW;
-      ctx.globalAlpha = c === 0 ? 0.5 : 0.25;
-      ctx.beginPath();
-      ctx.moveTo(tx, y0 + headerH - 8);
-      ctx.lineTo(tx, y0 + h - 6);
-      ctx.strokeStyle = c === 0 ? ET : "rgba(243,241,234,0.12)";
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-      if (c !== 0) ctx.fillText(`${c > 0 ? "+" : ""}${c}`, tx, y0 + headerH - 12);
-    }
-    ctx.fillStyle = ET;
-    ctx.fillText("0", cx, y0 + headerH - 12);
-
-    // a needle per sounding note
-    const active = activeNotes(state.result, state.beat);
-    const slotH = Math.min(34, (h - headerH - 8) / Math.max(1, active.length));
-    const barH = Math.min(20, slotH - 12);
-    ctx.textAlign = "left";
-    active.forEach((n, i) => {
-      const cents = noteCents(n, state.tuning);
-      const by = y0 + headerH + i * slotH + 4;
-      const len = (Math.max(-METER_RANGE, Math.min(METER_RANGE, cents)) / METER_RANGE) * halfW;
-      const colour = cents < -0.5 ? "#e08a6a" : cents > 0.5 ? "#88c891" : ET;
-      // bar from centre
-      ctx.fillStyle = colour;
-      ctx.globalAlpha = 0.85;
-      const bx = len >= 0 ? cx : cx + len;
-      roundRect(ctx, bx, by, Math.max(2, Math.abs(len)), barH, 3);
-      ctx.fill();
-      ctx.globalAlpha = 1;
-      // label: note name + signed cents
-      ctx.fillStyle = FG;
-      ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
-      ctx.fillText(`${pitchName(n.midiNominal)}`, x0 + 14, by + barH / 2 + 4);
-      ctx.textAlign = "right";
-      ctx.fillStyle = colour;
-      ctx.fillText(`${cents >= 0 ? "+" : ""}${cents.toFixed(1)}¢`, x0 + w - 14, by + barH / 2 + 4);
+    for (const n of activeNotes(state.result, state.beat)) {
+      const dev = n.centsVsET * (1 - mix);
+      const y = yOf(noteCents(n));
+      const lx = Math.min(xOf(n.startBeat) + (n.durBeats / total) * plotW + 6, w - 70);
+      ctx.fillStyle = dev < -0.5 ? FLAT : dev > 0.5 ? "#88c891" : ET;
       ctx.textAlign = "left";
-    });
+      ctx.fillText(`${pitchName(n.midiNominal)} ${dev >= 0 ? "+" : ""}${dev.toFixed(1)}¢`, lx, y);
+    }
+    ctx.textAlign = "left";
   }
 
   resize(): void {}
@@ -192,11 +155,63 @@ export class PianoRollViz implements Viz {
   }
 }
 
-/**
- * A non-blank message for hosts where a 2D canvas context can't be obtained.
- * Styled inline (no class dependency) so it stays legible and centred on both
- * the full site and the applet without reaching into either surface's CSS.
- */
+function drawTonicTrail(
+  ctx: CanvasRenderingContext2D,
+  state: VizState,
+  mix: number,
+  yOf: (c: number) => number,
+  xOf: (b: number) => number,
+  x0: number,
+  plotW: number,
+): void {
+  const hs = homes(state.result);
+  if (!hs.length) return;
+  const pt = (n: (typeof hs)[number]) => ({
+    x: xOf(n.startBeat),
+    y: yOf(n.midiNominal * 100 + n.centsVsET * (1 - mix)),
+    dev: n.centsVsET * (1 - mix),
+    reached: state.beat >= n.startBeat - 1e-6,
+  });
+  const pts = hs.map(pt);
+
+  // the C reference line (where an un-drifting tonic would stay)
+  const cY = yOf(hs[0].midiNominal * 100);
+  ctx.strokeStyle = "rgba(111,195,214,0.30)";
+  ctx.setLineDash([4, 6]);
+  ctx.beginPath();
+  ctx.moveTo(x0, cY);
+  ctx.lineTo(x0 + plotW, cY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // staircase through the tonic arrivals
+  ctx.strokeStyle = "rgba(224,138,106,0.85)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+  ctx.stroke();
+  ctx.lineWidth = 1;
+  for (const p of pts) {
+    ctx.fillStyle = p.reached ? FLAT : "rgba(224,138,106,0.4)";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.reached ? 4 : 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // label the cumulative drift at the last tonic
+  const last = pts[pts.length - 1];
+  const lastDev = pts[pts.length - 1].dev;
+  ctx.fillStyle = FLAT;
+  ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText(
+    Math.abs(lastDev) > 0.5 ? `home drifts ${Math.abs(lastDev).toFixed(1)}¢ flat →` : "home stays put (ET)",
+    Math.min(last.x - 8, x0 + plotW),
+    last.y - 10,
+  );
+  ctx.textAlign = "left";
+}
+
 function fallback(): HTMLElement {
   const p = document.createElement("p");
   p.setAttribute("role", "note");
