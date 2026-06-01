@@ -157,7 +157,7 @@ export class Stage {
     if (s.playing) this.store.setBeat(beat);
     const viz = this.current;
     if (this.broken.has(viz.id)) return;
-    const state: VizState = { result: this.result, beat, tuning: s.tuning, reducedMotion: this.reduced };
+    const state: VizState = { result: this.result, beat, tuning: s.tuning, reducedMotion: this.reduced, playing: s.playing };
     try {
       viz.draw(state);
     } catch (err) {

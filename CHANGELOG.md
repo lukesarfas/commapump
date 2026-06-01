@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- **Cents labels on the notes.** The pitch roll's cents read-outs now sit centred
+  on each note and flash as it's struck (and the note flashes white), instead of
+  floating to the right where they collided with other notes and the drift label.
 - **Balanced story layout.** The sticky lab is vertically centred to line up with
   the prose beside it, and the prose got larger type — fixing the top-aligned-lab /
   centred-text mismatch that left big empty gaps.
@@ -45,6 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- **Invisible engraving.** The abcjs notation on the "On the page" section was
+  inheriting the dark theme's light text colour onto its cream paper, rendering
+  near-white-on-white. Its ink is now forced dark, so the scores are legible.
 - **Wrong cents labels (−1258¢).** The pitch roll measured each note's deviation
   against a nominal note in the wrong octave (the JI voice was parked in a fixed
   register while its name was assigned a different octave), so non-tonic chords

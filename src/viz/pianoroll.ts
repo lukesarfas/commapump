@@ -110,7 +110,12 @@ export class PianoRollViz implements Viz {
     // visible across the whole timeline, even when paused.
     drawTonicTrail(ctx, state, mix, yOf, xOf, PAD_L, plotW);
 
-    // notes at their true pitch
+    // notes at their true pitch — a bright flash on the beat each one is struck
+    const FLASH = 1.1; // beats the onset flash lasts
+    const flashOf = (n: (typeof notes)[number]): number => {
+      const age = state.beat - n.startBeat;
+      return state.playing && age >= -1e-6 && age < FLASH && age <= n.durBeats ? 1 - age / FLASH : 0;
+    };
     const active = new Set(activeNotes(state.result, state.beat).map((n) => `${n.chordIndex}:${n.voiceId}`));
     for (const n of notes) {
       const nx = xOf(n.startBeat);
@@ -118,9 +123,16 @@ export class PianoRollViz implements Viz {
       const ny = yOf(noteCents(n)) - NOTE_H / 2;
       const on = active.has(`${n.chordIndex}:${n.voiceId}`);
       ctx.fillStyle = PALETTE[n.voiceId % PALETTE.length];
-      ctx.globalAlpha = on ? 1 : 0.42;
+      ctx.globalAlpha = on ? 1 : 0.4;
       roundRect(ctx, nx, ny, nw, NOTE_H, 3);
       ctx.fill();
+      const fl = flashOf(n);
+      if (fl > 0) {
+        ctx.globalAlpha = fl * 0.6;
+        ctx.fillStyle = "#fff";
+        roundRect(ctx, nx, ny, nw, NOTE_H, 3);
+        ctx.fill();
+      }
     }
     ctx.globalAlpha = 1;
 
@@ -134,16 +146,23 @@ export class PianoRollViz implements Viz {
     ctx.stroke();
     ctx.globalAlpha = 1;
 
-    // label the sounding notes with their distance from the grid (the cents)
-    ctx.font = "11px ui-sans-serif, system-ui, sans-serif";
-    for (const n of activeNotes(state.result, state.beat)) {
+    // cents labels sit ON the notes: they flash as each note is struck (and stay
+    // up for the sounding chord while paused, so the picture is readable stopped).
+    ctx.font = "600 12px ui-sans-serif, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    for (const n of notes) {
+      const fade = state.playing ? flashOf(n) : active.has(`${n.chordIndex}:${n.voiceId}`) ? 1 : 0;
+      if (fade <= 0) continue;
       const dev = n.centsVsET * (1 - mix);
-      const y = yOf(noteCents(n));
-      const lx = Math.min(xOf(n.startBeat) + (n.durBeats / total) * plotW + 6, w - 70);
+      const nx = xOf(n.startBeat);
+      const nw = Math.max(3, (n.durBeats / total) * plotW - 2);
+      const cx = Math.min(Math.max(nx + nw / 2, PAD_L + 26), w - 26);
+      const y = yOf(noteCents(n)) - NOTE_H / 2 - 7 - (1 - fade) * 5;
+      ctx.globalAlpha = Math.min(1, fade + 0.15);
       ctx.fillStyle = dev < -0.5 ? FLAT : dev > 0.5 ? "#88c891" : ET;
-      ctx.textAlign = "left";
-      ctx.fillText(`${pitchName(n.midiNominal)} ${dev >= 0 ? "+" : ""}${dev.toFixed(1)}¢`, lx, y);
+      ctx.fillText(`${dev >= 0 ? "+" : ""}${dev.toFixed(1)}¢`, cx, y);
     }
+    ctx.globalAlpha = 1;
     ctx.textAlign = "left";
   }
 

@@ -6,6 +6,7 @@ export interface VizState {
   beat: number;
   tuning: TuningMode;
   reducedMotion: boolean;
+  playing: boolean;
 }
 
 export interface Viz {

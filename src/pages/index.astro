@@ -381,7 +381,13 @@ const FIFTHS_ABC = `X:1\nM:4/4\nL:1/4\nK:C\nC G d a | e2 C2 |]`;
   .section h2 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 1rem; }
   .muted { color: var(--muted); }
   .scores { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
-  .score { background: #faf8f2; border-radius: var(--radius); padding: 0.5rem 1rem; overflow-x: auto; }
+  .score { background: #faf8f2; color: #1a1814; border-radius: var(--radius); padding: 0.5rem 1rem; overflow-x: auto; }
+  /* abcjs injects an SVG at runtime; force its ink dark so the engraving is
+     visible on the cream paper (it otherwise inherits the dark theme's light fg). */
+  .score :global(svg) { color: #1a1814; }
+  .score :global(svg path) { fill: #1a1814; }
+  .score :global(svg text),
+  .score :global(svg tspan) { fill: #1a1814; }
   .score-loading { color: #6b6457; font-size: 0.85rem; margin: 0.5rem 0; }
   figure { margin: 0; }
   figcaption { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
