@@ -222,10 +222,13 @@ function drawTonicTrail(
   ctx.lineTo(x0 + plotW, cY);
   ctx.stroke();
   ctx.setLineDash([]);
+  // Short tag at the RIGHT end so it never collides with the notes / flash labels
+  // that cluster at the start of the line; the caption explains "source of truth".
   ctx.fillStyle = "#6fc3d6";
   ctx.font = "600 11px ui-sans-serif, system-ui, sans-serif";
+  ctx.textAlign = "right";
+  ctx.fillText("1/1 · reference", x0 + plotW, cY - 8);
   ctx.textAlign = "left";
-  ctx.fillText("reference · 1/1 (the source of truth)", x0 + 6, cY - 7);
 
   // staircase through the tonic arrivals
   ctx.strokeStyle = "rgba(224,138,106,0.85)";
@@ -241,17 +244,17 @@ function drawTonicTrail(
     ctx.fill();
   }
 
-  // label the cumulative drift at the last tonic
+  // label the cumulative drift at the last tonic — only when it actually drifts,
+  // so a melodic line that returns home (or ET, which tempers the drift out)
+  // doesn't add a colliding label on the reference line.
   const last = pts[pts.length - 1];
-  const lastDev = pts[pts.length - 1].dev;
-  ctx.fillStyle = FLAT;
-  ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
-  ctx.textAlign = "right";
-  ctx.fillText(
-    Math.abs(lastDev) > 0.5 ? `home drifts ${Math.abs(lastDev).toFixed(1)}¢ flat →` : "home stays put (ET)",
-    Math.min(last.x - 8, x0 + plotW),
-    last.y - 10,
-  );
+  const lastDev = last.dev;
+  if (Math.abs(lastDev) > 0.5) {
+    ctx.fillStyle = FLAT;
+    ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(`home drifts ${Math.abs(lastDev).toFixed(1)}¢ ${lastDev < 0 ? "flat" : "sharp"} →`, Math.min(last.x - 8, x0 + plotW), last.y - 10);
+  }
   ctx.textAlign = "left";
 }
 
